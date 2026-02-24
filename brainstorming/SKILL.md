@@ -3,7 +3,7 @@ name: brainstorming
 description: Use when user requests feature design, architecture planning, needs to clarify requirements before implementation, OR when user's request is vague/unclear and they don't know exactly what they want. Triggers on "help me design", "I want to build", "how should I implement", or ambiguous requests lacking clear specifications
 ---
 
-# Brainstorming Ideas Into Designs
+# Exploring and Resolving Uncertainty
 
 ## Overview
 
