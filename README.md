@@ -1,98 +1,157 @@
 # Cclover Skills
 
-个人 Agent 技能集合，用于 OpenCode 和其他 AI 助手。
+English | [简体中文](README.zh-CN.md)
 
-## 简介
+Personal AI Agent skill collection for OpenCode, Claude Code, Cursor, and other AI assistants that support skill systems.
 
-这个仓库包含我开发的 AI Agent 技能，遵循 TDD 方法论开发，经过严格测试验证。每个技能都针对特定场景，帮助 Agent 更好地完成任务。
+## Introduction
 
-## 技能开发方法论
+This repository contains AI Agent skills developed and rigorously tested using TDD methodology. Each skill targets specific scenarios to help agents complete tasks more effectively and professionally. All skills are written using [superpowers/writing-skills](https://github.com/obra/superpowers/blob/main/skills/writing-skills/SKILL.md).
 
-所有技能都用 [superpowers/writing-skills](https://github.com/obra/superpowers/blob/main/skills/writing-skills/SKILL.md) 编写，遵循 **TDD (Test-Driven Development)** 方法论开发：
+## Installation
 
-### RED 阶段 - 写失败的测试
+**Note**: Installation varies slightly by platform.
 
-1. 设计压力场景（3+ 种压力组合）
-2. 在**没有技能**的情况下运行场景
-3. 记录 Agent 的基线行为（逐字记录）
-4. 识别失败模式和合理化借口
+### OpenCode
 
-### GREEN 阶段 - 写最小技能
+1. Clone this repository to any local directory:
+```bash
+git clone https://github.com/cclover/cclover-skills.git
+cd cclover-skills
+```
 
-1. 编写技能，针对 RED 阶段发现的具体失败
-2. 不添加假设性的内容
-3. 用技能重新运行相同场景
-4. Agent 应该通过所有测试
+2. Create symbolic links to OpenCode skills directory:
+```bash
+# User-level skills directory
+ln -s "$(pwd)/skills"/* ~/.config/opencode/skills/
 
-### REFACTOR 阶段 - 关闭漏洞
+# Or project-level skills directory (run in project root)
+ln -s "$(pwd)/skills"/* ./.opencode/skills/
+```
 
-1. 设计新的压力场景寻找漏洞
-2. Agent 找到新的合理化借口？添加明确的反驳
-3. 重新测试直到防弹
-4. 构建合理化借口对照表
+3. Restart OpenCode or reload configuration
 
-### 为什么用 TDD？
+### Claude Code
 
-- **没有测试 = 没有验证**：不知道技能是否真的有效
-- **先写技能 = 猜测问题**：可能解决不存在的问题
-- **测试驱动 = 解决真实问题**：针对实际失败模式设计
+1. Clone this repository to any local directory:
+```bash
+git clone https://github.com/cclover/cclover-skills.git
+cd cclover-skills
+```
 
-## 技能结构
+2. Create symbolic links to Claude Code skills directory:
+```bash
+# macOS/Linux
+ln -s "$(pwd)/skills"/* ~/.claude/skills/
 
-每个技能包含：
+# Windows (run PowerShell as Administrator)
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills" -Target "$PWD\skills"
+```
+
+3. Restart Claude Code
+
+### Cursor
+
+1. Clone this repository to any local directory:
+```bash
+git clone https://github.com/cclover/cclover-skills.git
+cd cclover-skills
+```
+
+2. Create symbolic links to Cursor skills directory:
+```bash
+# macOS/Linux
+ln -s "$(pwd)/skills"/* ~/.cursor/skills/
+
+# Windows (run PowerShell as Administrator)
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.cursor\skills" -Target "$PWD\skills"
+```
+
+3. Restart Cursor
+
+### Other AI Assistants
+
+If your AI assistant supports skill systems, you can typically install by:
+
+1. Clone this repository to any local directory
+2. Consult your AI assistant's documentation to find the skills directory location
+3. Create symbolic links: `ln -s /path/to/cclover-skills/skills/* /path/to/your-ai-assistant/skills/`
+
+### Verify Installation
+
+After installation, ask the agent in a new session: "What skills do you have available?" or try triggering a skill (e.g., "Help me design this feature" should trigger the brainstorming skill).
+
+## Skills List
+
+- **brainstorming** - Help users clarify vague ideas and requirements through iterative exploration and targeted questioning
+- **brainstorming-complete** - Decide next action after brainstorming ends, avoiding unauthorized execution
+- **opencode-plugin-development** - Quick reference guide for OpenCode plugin development
+- **writing-agents-module-level** - Write module-level AGENTS.md documentation (30-second quick orientation guide)
+- **writing-agents-user-level** - Write user-level AGENTS.md documentation (system environment and personalized configuration)
+- **writing-agents-project-root** - Write project-root AGENTS.md documentation (complete development guide)
+
+## Development Methodology
+
+All skills follow **TDD (Test-Driven Development)** methodology:
+
+- **RED Phase**: Design stress scenarios, record agent's failure behavior without skills
+- **GREEN Phase**: Write minimal skills to solve these failures, re-run scenarios with skills to verify passing
+- **REFACTOR Phase**: Design new stress scenarios to find loopholes, close rationalization gaps
+
+**Why TDD?**
+- No tests = No verification
+- Write skills first = Guessing problems
+- Test-driven = Solving real problems
+
+## Skill Structure
+
+Each skill contains:
 
 ```
 skill-name/
-  SKILL.md              # 技能主文件（必需）
-  supporting-file.*     # 支持文件（可选，仅在需要时）
+  SKILL.md              # Skill main file (required)
+  supporting-file.*     # Supporting files (optional, only when needed)
 ```
 
-### SKILL.md 结构
+### SKILL.md Structure
 
 ```markdown
 ---
 name: skill-name
-description: Use when [触发条件和症状]
+description: Use when [trigger conditions and symptoms]
 ---
 
 # Skill Name
 
 ## Overview
-核心原则（1-2句话）
+Core principles (1-2 sentences)
 
 ## When to Use
-触发条件和反例
+Trigger conditions and counter-examples
 
 ## Process Flow
-流程图（仅在决策非显而易见时）
+Flowchart (only when decision is non-obvious)
 
 ## The Process
-详细步骤
+Detailed steps
 
 ## Key Principles
-关键原则
+Key principles
 
 ## Common Mistakes
-常见错误对照表
+Common mistakes reference table
 
 ## Red Flags
-自我检查清单
+Self-check checklist
 
 ## Anti-Patterns
-反模式示例（来自实际测试）
+Anti-pattern examples (from actual testing)
 ```
 
-## 贡献指南
-
-这是我的个人技能仓库，暂不接受外部贡献。如果你想创建自己的技能：
-
-1. Fork 这个仓库作为模板
-2. 遵循 TDD 方法论开发个技能都经过充分测试
-
-## 许可证
+## License
 
 MIT License
 
-## 联系方式
+## Contact
 
-如有问题或建议，欢迎通过 GitHub Issues 联系。
+For questions or suggestions, please contact via [GitHub Issues](https://github.com/cclover/cclover-skills/issues).

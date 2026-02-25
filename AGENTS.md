@@ -31,6 +31,16 @@ cclover-skills/
 
 **Must use writing-skills skill to write**, unless the user explicitly indicates to write directly without loading the skill.
 
+### Updating README Documentation
+
+**When adding or modifying any skill, all language versions of README must be synchronized.**
+
+Required updates:
+- Update skill list in README.md (add new skill or update description)
+- Keep skill descriptions consistent across all README language versions
+- Ensure installation instructions remain accurate
+
+This ensures users can discover and understand all available skills regardless of their language preference.
 ### TDD Testing Workflow
 
 TDD testing is mandatory when writing skills. **Key steps**:
