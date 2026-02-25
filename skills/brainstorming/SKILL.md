@@ -26,6 +26,14 @@ Do NOT use when:
 - User explicitly says "just implement X" with clear requirements
 - Task is purely mechanical (refactoring, bug fix with known solution)
 
+## Required Tools
+
+This skill requires:
+- **TodoWrite** (or equivalent task tracking tool) - MANDATORY for tracking uncertainties
+- **Read/Grep tools** - For codebase exploration when needed
+
+Without TodoWrite, this skill cannot function properly. The entire methodology depends on explicit TODO tracking.
+
 ## Process Flow
 
 ```dot
@@ -83,6 +91,46 @@ digraph brainstorming_flow {
     "Follow user ion" -> "End";
     "Invoke brainstorming-complete skill" -> "End";
 }
+```
+
+## Output Format
+
+### TODO List Format
+
+Your TODO list should look like this:
+```
+TodoWrite:
+- [ ] Understand caching scope - which endpoints need caching?
+- [ ] Clarify performance requirements - what's acceptable latency?
+- [ ] Confirm infrastructure constraints - Redis available?
+```
+
+### Question Format
+
+**Multiple choice (preferred):**
+```
+For caching scope, which endpoints need caching?
+A) All API endpoints
+B) Only product catalog endpoints
+C) Only user-facing endpoints
+D) Something else (please specify)
+```
+
+**Open-ended (when necessary):**
+```
+What performance requirements do you have for the cached endpoints?
+(e.g., target response time, cache hit rate, etc.)
+```
+
+### Final Confirmation Format
+
+```
+I've covered the following aspects:
+- Caching scope: Product catalog endpoints only
+- Performance: <200ms response time required
+- Infrastructure: Redis available, 2GB memory limit
+
+Is there anything I missed or any other aspect you'd like to clarify?
 ```
 
 ## The Process
@@ -229,6 +277,135 @@ Is there anything I missed or any other aspect you'd like to clarify?
 
 **CRITICAL**: This is the last safety check. Don't skip it.
 
+## Examples
+
+### Example 1: Simple Feature Request
+
+**User:** "I want to add caching to my API"
+
+**Agent:**
+```
+TodoWrite:
+- [ ] Understand caching scope - which endpoints?
+- [ ] Clarify performance requirements
+- [ ] Confirm infrastructure constraints
+```
+
+For caching scope, which endpoints need caching?
+A) All API endpoints
+B) Only product catalog endpoints
+C) Only user-facing endpoints
+D) Something else
+
+**User:** "B, product catalog only"
+
+**Agent:**
+```
+TodoWrite:
+- [x] Understand caching scope - product catalog endpoints
+- [ ] Clarify performance requirements ← in_progress
+- [ ] Confirm infrastructure constraints
+```
+
+What performance requirements do you have?
+(e.g., target response time, cache hit rate)
+
+**User:** "Response time should be under 200ms"
+
+**Agent:**
+```
+TodoWrite:
+- [x] Understand caching scope - product catalog endpoints
+- [x] Clarify performance requirements - <200ms response
+- [ ] Confirm infrastructure constraints ← in_progress
+```
+
+Do you have Redis or another caching system available?
+
+**User:** "Yes, Redis is available"
+
+**Agent:**
+```
+TodoWrite:
+- [x] Understand caching scope - product catalog endpoints
+- [x] Clarify performance requirements - <200ms response
+- [x] Confirm infrastructure constraints - Redis available
+```
+
+I've covered the following aspects:
+- Caching scope: Product catalog endpoints only
+- Performance: <200ms response time required
+- Infrastructure: Redis available
+
+Is there anything I missed or any other aspect you'd like to clarify?
+
+**User:** "No, that's all"
+
+**Agent:** [Invokes brainstorming-complete skill]
+
+### Example 2: Vague Request with Refinement
+
+**User:** "Help me improve the deployment process"
+
+**Agent:**
+```
+TodoWrite:
+- [ ] Understand current deployment pain points
+- [ ] Clarify deployment environment
+- [ ] Identify improvement goals
+```
+
+What specific problems are you experiencing with the current deployment?
+
+**User:** "It's slow and manual, takes 2 hours each time"
+
+**Agent:**
+```
+TodoWrite:
+- [x] Understand current deployment pain points - slow (2h), manual
+- [ ] Understand manual steps - what's being done manually?
+- [ ] Understand slowness causes - what takes the most time?
+- [ ] Clarify deployment environment
+- [ ] Identify improvement goals
+```
+
+[Note: First TODO was too broad, refined into two specific sub-TODOs]
+
+What manual steps are involved in the deployment?
+
+### Example 3: User Adds New Aspect
+
+**User:** "I want to add authentication"
+
+**Agent:**
+```
+TodoWrite:
+- [ ] Understand authentication type needed
+- [ ] Clarify user management requirements
+- [ ] Confirm security requirements
+```
+
+[After resolving all TODOs...]
+
+I've covered:
+- Authentication: JWT-based
+- User management: Email/password only
+- Security: HTTPS required
+
+Is there anything I missed?
+
+**User:** "Oh, we also need social login with Google"
+
+**Agent:**
+```
+TodoWrite:
+- [x] Understand authentication type - JWT
+- [x] Clarify user management - email/password
+- [x] Confirm security - HTTPS required
+- [ ] Understand Google OAuth requirements ← NEW
+```
+
+For Google OAuth integration, do you already have Google Cloud credentials set up?
 ### 6. Decide Next Action
 
 **After user confirms nothing is missed:**
@@ -284,6 +461,82 @@ Do NOT explore when:
 - You already have sufficient context
 - Exploration would be speculative (fishing for information)
 
+## Edge Cases
+
+### User Refuses to Answer
+
+**User:** "I don't want to answer that"
+
+**Response:** "No problem. I'll mark this as a known uncertainty and we can revisit it later if needed. Let me move to the next question."
+
+```
+TodoWrite:
+- [x] Question X - user prefers not to specify
+- [ ] Next question ← in_progress
+```
+
+### User Says "I Don't Know"
+
+**User:** "I'm not sure about that"
+
+**Response:** Offer options or context:
+```
+That's okay. Let me provide some context to help:
+- Option A would mean [consequence]
+- Option B would mean [consequence]
+
+Would either of these work, or would you like to explore this further?
+```
+
+If user still unsure, mark as "to be determined" and continue:
+```
+TodoWrite:
+- [x] Question X - to be determined later
+- [ ] Next question ← in_progress
+```
+
+### User Gives Contradictory Answers
+
+**Example:** User says "must be fast" but also "don't want caching"
+
+**Response:** Point out the contradiction gently:
+```
+I notice you mentioned both [requirement A] and [requirement B].
+These might be in tension because [explanation].
+Which is more important, or is there a way to satisfy both?
+```
+
+### User Keeps Adding Requirements
+
+**Pattern:** After final confirmation, user keeps saying "oh, and also..."
+
+**Response:** Add new TODOs and continue the process:
+```
+TodoWrite:
+[...existing completed TODOs...]
+- [ ] New requirement 1
+- [ ] New requirement 2
+```
+
+No problem, let me clarify these additional aspects...
+
+**If excessive (>10 iterations):** Gently suggest documenting requirements:
+```
+I notice we're covering many aspects. Would it help to create a requirements document
+to track everything systematically? I can help with that.
+```
+
+### User Gives Vague Answers
+
+**User:** "Make it good" or "Whatever works"
+
+**Response:** Ask for concrete criteria:
+```
+To help me understand "good", could you share:
+- What would success look like?
+- What problems are you trying to avoid?
+- Are there any examples of "good" you've seen elsewhere?
+```
 ## Key Principles
 
 ### TODO List Over Memory

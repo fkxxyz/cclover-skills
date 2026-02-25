@@ -74,6 +74,32 @@ digraph brainstorming_complete {
 }
 ```
 
+## Output Format
+
+### Type 0: Skill Match Response
+```
+The requirements are clear. I can handle this using [skill-name] to [purpose].
+Should I proceed?
+```
+
+### Type 1: Non-Task Response
+```
+To summarize: [key points from discussion]
+What would you like to do next?
+```
+
+### Type 2: Simple Task Response
+```
+[Brief description of what will be done]
+Should I execute this now?
+```
+
+### Type 3: Complex Task Response
+```
+This [task description] involves [complexity factors].
+Should I create an implementation plan to break this down?
+```
+
 ## The Four Types
 
 ### Type 0: Matches Existing Skill (Highest Priority)
@@ -175,53 +201,61 @@ digraph brainstorming_complete {
 
 **Critical:** "You decide" or "you pick" does NOT mean you should make technical decisions. If no clear choice emerged from brainstorming, it's still a non-task. Summarize the options and ask what they want to do.
 
-## The Iron Law
+## Core Principle
 
-**NEVER execute without asking first.**
+**ALWAYS ask before executing. Present options, never make decisions for the user.**
 
-No exceptions:
-- Not when user says "start"
-- Not when user says "go ahead"
-- Not when user says "do it"
-- Not when user says "I'm in a hurry"
-- Not when user says "you decide"
-- Not when task is simple
-- Not when you're confident
+This applies to:
+- All task types (simple and complex)
+- All user phrases ("start", "go ahead", "do it", "I'm in a hurry")
+- All confidence levels (even when you're certain)
 
 **"Start" means "start the process"** - which begins with asking permission.
 
-**"You decide" means present options** - not make decisions for them.
+**"You decide" means present options** - not make technical decisions.
 
 **"I'm in a hurry" means be efficient** - not skip asking.
-
 ## Common Mistakes
 
-| Mistake | Why It's Wrong | How to Avoid |
-|---------|----------------|--------------|
-| "User said 'start', so I'll execute" | "Start" ≠ "execute without asking" | Always ask first, even after "start" |
-| "Task is simple, no need to ask" | Simple tasks still need confirmation | Ask for all tasks, simple or complex |
-| "Skill matched, I'll load it now" | Matching ≠ executing | Tell user about match, then ask |
-| "User seems done, I'll wait silently" | Passive waiting wastes opportunity | Actively ask what they want next |
-| "I'll skip planning, it's obvious" | Obvious to you ≠ obvious to user | Complex tasks always need planning discussion |
-| "User said 'you decide', so I will" | Delegation doesn't mean make technical decisions | Present options, don't choose for them |
-| "User is in a hurry, I'll be quick" | Time pressure doesn't change process | Follow same steps, don't mention their urgency |
-| "No clear choice, I'll pick one" | Unchosen options = non-task | Summarize options, ask what they want |
+### Execution Without Permission
+**Symptom:** Thinking "User said 'start', so I'll execute" or "Task is simple, no need to ask"
 
-## Red Flags - Check Yourself
+**Fix:** Ask first for ALL tasks, regardless of complexity or user phrasing
 
-If you're thinking:
-- "User wants me to start" → Ask first
-- "This is too simple to ask about" → Ask anyway
-- "I know what to do next" → User decides, not you
-- "They'll tell me if they don't want it" → Proactive asking, not reactive
-- "Asking is annoying" → Not asking is presumptuous
-- "I should just do it" → STOP. Ask first
-- "User said 'you decide'" → Present options, don't choose
-- "User is in a hurry" → Follow same process, don't rush
-- "I'll help by choosing for them" → That's not helping, that's deciding
-- "Multiple options but I know which is best" → Your opinion doesn't matter, user chooses
+### Assuming User Intent
+**Symptom:** Interpreting "start" or "go ahead" as permission to execute
 
-**All of these mean: You're about to violate the Iron Law. Ask first.**
+**Fix:** Clarify what they want - "start" is ambiguous
+
+### Making Technical Decisions
+**Symptom:** User says "you decide" and you pick a technical solution
+
+**Fix:** If no choice was made during brainstorming, it's a non-task. Summarize options and ask what they want
+
+### Silent Waiting
+**Symptom:** User seems satisfied, so you wait for their next request
+
+**Fix:** Actively guide user to next steps with appropriate question
+
+### Acknowledging Time Pressure
+**Symptom:** User says "I'm in a hurry" and you mention their urgency or rush the process
+
+**Fix:** Follow the same process without mentioning their time constraint. Be professional
+
+### Skipping Planning Discussion
+**Symptom:** Complex task is obvious to you, so you skip asking about planning
+
+**Fix:** Complex tasks (≥3 steps/tools/parallel ops) always need planning discussion
+
+### Loading Skills Without Permission
+**Symptom:** Skill matched, so you load it immediately
+
+**Fix:** Tell user about the match, then ask if they want to proceed
+
+### Choosing Among Unresolved Options
+**Symptom:** Multiple options discussed but no clear choice, so you pick one
+
+**Fix:** Treat as non-task. Summarize options and ask what they want
 
 ## Skill Boundaries
 
@@ -299,57 +333,6 @@ Let me start by modifying auth.js...
 [starts implementing without plan]
 ```
 
-## Anti-Patterns
-
-### ❌ Assuming User Intent
-
-```
-User said "start", so they want me to implement immediately.
-```
-
-**Reality:** "Start" is ambiguous. Always clarify.
-
-### ❌ Skipping Confirmation for Simple Tasks
-
-```
-It's just one line change, I'll do it quickly.
-```
-
-**Reality:** Even simple changes need confirmation.
-
-### ❌ Silent Waiting
-
-```
-User seems satisfied, I'll wait for their next request.
-```
-
-**Reality:** Actively guide user to next steps.
-
-### ❌ Planning Without Permission
-
-```
-This is complex, I'll create a plan now.
-```
-
-**Reality:** Ask if they want a plan first.
-
-### ❌ Making Technical Decisions
-
-```
-User: "You decide which caching solution to use."
-AI: "I recommend Redis because..."
-```
-
-**Reality:** If no choice was made, it's a non-task. Summarize options and ask what they want.
-
-### ❌ Acknowledging Time Pressure
-
-```
-User: "I'm in a hurry, start now."
-AI: "Considering your time constraint, I'll work efficiently..."
-```
-
-**Reality:** Don't mention their urgency. Follow the same process. Be professional.
 
 ## The Bottom Line
 

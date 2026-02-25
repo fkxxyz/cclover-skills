@@ -61,6 +61,36 @@ Example:
 - **Universality**: Skills should be applicable to all AI assistants, not dependent on specific environments or tools
 - **Independence**: Skills can be used independently
 - **Composability**: Skills can have interdependencies
+
+### Prompt Writing Guidelines for Skills
+
+Skills are prompts. A well-written skill is a well-written prompt. Follow these principles when writing SKILL.md files:
+
+#### Structure
+
+Every skill should follow this order:
+1. **Role/Context** — Tell the agent who it is and what scenario it's in
+2. **Task** — What to do, stated as concrete actions
+3. **Constraints** — What NOT to do, boundaries, edge cases
+4. **Output Format** — Expected deliverables, structure, style
+5. **Examples** — Input→Output pairs when behavior is hard to describe in words
+
+#### Core Principles
+
+- **Specific over abstract**: "Check if the function has error handling and suggest try-catch with custom error types" beats "improve the code"
+- **Positive over negative**: "Only discuss functionality" works better than "Don't mention pricing" — negation draws attention to the forbidden concept
+- **Show over tell**: One good example > three paragraphs of explanation. Agents pattern-match; exploit that
+- **Atomic instructions**: One instruction per bullet. Compound sentences ("do X and also Y while considering Z") get partially executed
+- **Constraint boundaries**: Explicitly state what's in-scope and out-of-scope. Unbounded instructions lead to scope creep
+- **Ordered by priority**: Put the most critical instructions first. Attention degrades over length
+
+#### Common Pitfalls
+
+- **Contradictory instructions**: "Be concise" + "Explain every step in detail" — the agent will oscillate. Pick one, or specify when each applies
+- **Implicit assumptions**: If the skill depends on a file structure, tool availability, or naming convention, state it explicitly
+- **Over-specification**: Packing too many requirements dilutes each one. If a skill exceeds ~200 lines, split it or prioritize ruthlessly
+- **Missing edge cases**: Only testing the happy path. Stress-test with adversarial inputs during TDD
+- **Vague success criteria**: "Make it better" is not verifiable. "All functions have JSDoc with @param and @returns" is
 cclover-skills/
 ├── my-skill/
 │   └── SKILL.md
