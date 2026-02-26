@@ -85,6 +85,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.cursor\skills" -Target 
 
 - **brainstorming** - 通过迭代探索和针对性提问帮助用户澄清模糊想法和需求
 - **brainstorming-complete** - 头脑风暴结束后决定下一步行动，避免擅自执行
+- **opencode-configuration** - OpenCode 配置文件 (opencode.json) 完整参考
 - **opencode-plugin-development** - OpenCode 插件开发快速参考指南
 - **writing-agents-module-level** - 编写模块级 AGENTS.md 文档（30秒快速导向指南）
 - **writing-agents-user-level** - 编写用户级 AGENTS.md 文档（系统环境和个性化配置）
