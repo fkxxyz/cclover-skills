@@ -8,6 +8,15 @@ Personal AI Agent skill collection for OpenCode, Claude Code, Cursor, and other 
 
 This repository contains AI Agent skills developed and rigorously tested using TDD methodology. Each skill targets specific scenarios to help agents complete tasks more effectively and professionally. All skills are written using [superpowers/writing-skills](https://github.com/obra/superpowers/blob/main/skills/writing-skills/SKILL.md).
 
+## Architecture
+
+This repository uses a nested skill system with two directories:
+
+- **main-skills/** - User-facing skills that you install to your AI assistant
+- **skills/** - Internal skills used by main-skills for nested loading (via MCP service)
+
+Skills in main-skills/ can load and compose functionality from skills/ directory, enabling modular skill design without exposing internal implementation details to end users.
+
 ## Installation
 
 **Note**: Installation varies slightly by platform.
@@ -23,10 +32,13 @@ cd cclover-skills
 2. Create symbolic links to OpenCode skills directory:
 ```bash
 # User-level skills directory
-ln -s "$(pwd)/skills"/* ~/.config/opencode/skills/
+ln -s "$(pwd)/main-skills" ~/.config/opencode/skills/cclover
 
-# Or project-level skills directory (run in project root)
-ln -s "$(pwd)/skills"/* ./.opencode/skills/
+# Additional skills installation
+mkdir -p ~/.config/opencode/cclover
+ln -sf "$(pwd)/skills" ~/.config/opencode/cclover/skills
+mkdir -p ~/.config/opencode/plugins
+ln -sf "$(pwd)/.opencode/plugin"/* ~/.config/opencode/plugins/
 ```
 
 3. Restart OpenCode or reload configuration
@@ -42,10 +54,10 @@ cd cclover-skills
 2. Create symbolic links to Claude Code skills directory:
 ```bash
 # macOS/Linux
-ln -s "$(pwd)/skills"/* ~/.claude/skills/
+ln -s "$(pwd)/main-skills" ~/.claude/skills/cclover
 
 # Windows (run PowerShell as Administrator)
-New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills" -Target "$PWD\skills"
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\cclover" -Target "$PWD\main-skills"
 ```
 
 3. Restart Claude Code
@@ -61,10 +73,10 @@ cd cclover-skills
 2. Create symbolic links to Cursor skills directory:
 ```bash
 # macOS/Linux
-ln -s "$(pwd)/skills"/* ~/.cursor/skills/
+ln -s "$(pwd)/main-skills" ~/.cursor/skills/cclover
 
 # Windows (run PowerShell as Administrator)
-New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.cursor\skills" -Target "$PWD\skills"
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.cursor\skills\cclover" -Target "$PWD\main-skills"
 ```
 
 3. Restart Cursor
@@ -75,7 +87,7 @@ If your AI assistant supports skill systems, you can typically install by:
 
 1. Clone this repository to any local directory
 2. Consult your AI assistant's documentation to find the skills directory location
-3. Create symbolic links: `ln -s /path/to/cclover-skills/skills/* /path/to/your-ai-assistant/skills/`
+3. Create symbolic links: `ln -s /path/to/cclover-skills/main-skills /path/to/your-ai-assistant/skills/cclover`
 
 ### Verify Installation
 
@@ -85,9 +97,7 @@ After installation, ask the agent in a new session: "What skills do you have ava
 
 - **brainstorming** - Help users clarify vague ideas and requirements through iterative exploration and targeted questioning
 - **brainstorming-complete** - Decide next action after brainstorming ends, avoiding unauthorized execution
-- **opencode-configuration** - Complete reference for OpenCode configuration (opencode.json)
-- **opencode-plugin-development** - Quick reference guide for OpenCode plugin development
-- **opencode-sdk** - Complete reference for OpenCode SDK (@opencode-ai/sdk) - types, API methods, and usage examples
+- **opencode** - Entry point for all OpenCode-related work (plugins, SDK, configuration, APIs)
 - **writing-agents-module-level** - Write module-level AGENTS.md documentation (30-second quick orientation guide)
 - **writing-agents-user-level** - Write user-level AGENTS.md documentation (system environment and personalized configuration)
 - **writing-agents-project-root** - Write project-root AGENTS.md documentation (complete development guide)

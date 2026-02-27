@@ -1,0 +1,13 @@
+# Sisyphus task management
+.sisyphus/
+
+# Build outputs
+mcp/dist/
+mcp/node_modules/
+
+# Backup files
+*.bak
+
+# IDE
+.vscode/
+.idea/

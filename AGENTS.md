@@ -14,16 +14,31 @@ Personal AI Agent skill collection developed with TDD methodology, applicable to
 
 ```
 cclover-skills/
-├── skills/              # All skills must be placed in this directory
+├── main-skills/         # User-facing skills (linked to system)
 │   ├── skill-name/
 │   │   ├── SKILL.md    # Skill main file (required)
 │   │   └── *.*         # Supporting files (optional)
+│   └── ...
+├── skills/              # Internal skills (for nested loading)
+│   ├── helper-skill/
+│   │   └── SKILL.md
 │   └── ...
 ├── AGENTS.md           # This file
 └── README.md           # Project description
 ```
 
-**Important Rule**: All skills must be placed in the `skills/` directory, not in the project root.
+**Directory Structure**:
+- **main-skills/**: User-facing skills installed to AI assistant systems
+- **skills/**: Internal skills used by main-skills for nested loading (not directly exposed to users)
+
+## Nested Skill System
+
+This project uses a nested skill system where main-skills can load and compose functionality from internal skills.
+
+**How it works**:
+- Skills in `main-skills/` can use the `skill` tool (provided by MCP service) to load skills from `skills/` directory
+- This enables modular skill design without exposing internal implementation details to end users
+- The `cclover-skill` tool accepts a skill name and loads the corresponding SKILL.md from `skills/{skill-name}/SKILL.md`
 
 ## Development Rules
 
@@ -53,7 +68,7 @@ TDD testing is mandatory when writing skills. **Key steps**:
 
 Example:
 ```
-请全文阅读 /path/to/cclover-skills/skills/new-skill/SKILL.md，把它当成技能
+Please read the full text of /path/to/cclover-skills/skills/new-skill/SKILL.md and treat it as a skill.
 ```
 
 ### Skill Design Principles

@@ -7,6 +7,10 @@
 ## 简介
 
 这个仓库包含经过 TDD 方法论开发和严格测试验证的 AI Agent 技能。每个技能针对特定场景，帮助 Agent 更规范、更高效地完成任务。所有技能使用 [superpowers/writing-skills](https://github.com/obra/superpowers/blob/main/skills/writing-skills/SKILL.md) 编写。
+## 架构
+本仓库使用嵌套技能系统,包含两个目录:
+- **main-skills/** - 面向用户的技能,安装到你的 AI 助手中
+- **skills/** - 额外技能，供 main-skills 通过 cclover-skill 嵌套加载的技能
 
 ## 安装
 
@@ -23,10 +27,13 @@ cd cclover-skills
 2. 创建符号链接到 OpenCode 技能目录：
 ```bash
 # 用户级技能目录
-ln -s "$(pwd)/skills"/* ~/.config/opencode/skills/
+ln -s "$(pwd)/main-skills" ~/.config/opencode/skills/cclover
 
-# 或者项目级技能目录（在项目根目录执行）
-ln -s "$(pwd)/skills"/* ./.opencode/skills/
+# 额外技能安装
+mkdir -p ~/.config/opencode/plugins
+ln -sf "$(pwd)/skills" ~/.config/opencode/cclover/skills
+mkdir -p ~/.config/opencode/plugin
+ln -sf "$(pwd)/.opencode/plugin"/* ~/.config/opencode/plugins/
 ```
 
 3. 重启 OpenCode 或重新加载配置
@@ -42,10 +49,10 @@ cd cclover-skills
 2. 创建符号链接到 Claude Code 技能目录：
 ```bash
 # macOS/Linux
-ln -s "$(pwd)/skills"/* ~/.claude/skills/
+ln -s "$(pwd)/main-skills" ~/.claude/skills/cclover
 
 # Windows (以管理员身份运行 PowerShell)
-New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills" -Target "$PWD\skills"
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\cclover" -Target "$PWD\main-skills"
 ```
 
 3. 重启 Claude Code
@@ -61,10 +68,10 @@ cd cclover-skills
 2. 创建符号链接到 Cursor 技能目录：
 ```bash
 # macOS/Linux
-ln -s "$(pwd)/skills"/* ~/.cursor/skills/
+ln -s "$(pwd)/main-skills" ~/.cursor/skills/cclover
 
 # Windows (以管理员身份运行 PowerShell)
-New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.cursor\skills" -Target "$PWD\skills"
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.cursor\skills\cclover" -Target "$PWD\main-skills"
 ```
 
 3. 重启 Cursor
@@ -75,7 +82,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.cursor\skills" -Target 
 
 1. Clone 本仓库到本地任意位置
 2. 查阅你的 AI 助手文档，找到技能目录位置
-3. 创建符号链接：`ln -s /path/to/cclover-skills/skills/* /path/to/your-ai-assistant/skills/`
+3. 创建符号链接:`ln -s /path/to/cclover-skills/main-skills /path/to/your-ai-assistant/skills/cclover`
 
 ### 验证安装
 
@@ -85,9 +92,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.cursor\skills" -Target 
 
 - **brainstorming** - 通过迭代探索和针对性提问帮助用户澄清模糊想法和需求
 - **brainstorming-complete** - 头脑风暴结束后决定下一步行动，避免擅自执行
-- **opencode-configuration** - OpenCode 配置文件 (opencode.json) 完整参考
-- **opencode-plugin-development** - OpenCode 插件开发快速参考指南
-- **opencode-sdk** - OpenCode SDK (@opencode-ai/sdk) 完整参考 - 类型定义、API 方法和使用示例
+- **opencode** - OpenCode 相关工作的统一入口（插件、SDK、配置、API）
 - **writing-agents-module-level** - 编写模块级 AGENTS.md 文档（30秒快速导向指南）
 - **writing-agents-user-level** - 编写用户级 AGENTS.md 文档（系统环境和个性化配置）
 - **writing-agents-project-root** - 编写项目根级 AGENTS.md 文档（完整开发指南）
