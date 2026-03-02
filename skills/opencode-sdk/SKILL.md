@@ -7,34 +7,275 @@ description: Use when programmatically controlling OpenCode server, writing code
 
 ## Overview
 
-Complete reference for OpenCode SDK (@opencode-ai/sdk) - a type-safe JavaScript/TypeScript client library for programmatically controlling OpenCode server. Covers installation, type definitions, API methods, and usage patterns.
+Complete reference for OpenCode SDK (@opencode-ai/sdk) - a type-safe JavaScript/TypeScript client library for programmatically controlling OpenCode server. Also covers direct HTTP API access with authentication for non-JavaScript environments.
 
 ## When to Use
 
-- Writing code that uses `@opencode-ai/sdk`
+- Writing code that uses `@opencode-ai/sdk` (JavaScript/TypeScript)
 - Questions about OpenCode SDK API methods, types, or usage
 - Need to understand Session, Message, Event, or other SDK types
 - Building plugins or tools that interact with OpenCode server
 - Need examples of SDK usage patterns
 - Looking for type definition file locations
+- Need to call OpenCode HTTP API directly (curl, Python, Go, etc.)
+- Questions about authentication or HTTP endpoints
 
 ## Quick Reference
 
-| Task | Method | Example |
-|------|--------|---------|
-| Create session | `client.session.create()` | `await client.session.create({ body: { title: "My Session" } })` |
-| Send prompt | `client.session.prompt()` | `await client.session.prompt({ path: { id }, body: { parts: [...] } })` |
-| List sessions | `client.session.list()` | `await client.session.list()` |
-| Subscribe events | `client.event.subscribe()` | `const events = await client.event.subscribe()` |
-| Get current project | `client.project.current()` | `await client.project.current()` |
-| Read file | `client.file.read()` | `await client.file.read({ query: { path: "src/index.ts" } })` |
-| Search files | `client.find.files()` | `await client.find.files({ query: { query: "*.ts" } })` |
-| Show toast | `client.tui.showToast()` | `await client.tui.showToast({ body: { message: "Done" } })` |
+| Task | SDK Method | HTTP Endpoint | Example |
+|------|------------|---------------|---------|
+| Health check | `client.global.health()` | `GET /global/health` | `curl -u user:pass http://localhost:4096/global/health` |
+| Create session | `client.session.create()` | `POST /session` | `await client.session.create({ body: { title: "My Session" } })` |
+| Send prompt | `client.session.prompt()` | `POST /session/{id}/message` | `await client.session.prompt({ path: { id }, body: { parts: [...] } })` |
+| List sessions | `client.session.list()` | `GET /session` | `await client.session.list()` |
+| Subscribe events | `client.event.subscribe()` | `GET /global/event` (SSE) | `const events = await client.event.subscribe()` |
+| Get current project | `client.project.current()` | `GET /project/current` | `await client.project.current()` |
+| Read file | `client.file.read()` | `GET /file?path=...` | `await client.file.read({ query: { path: "src/index.ts" } })` |
+| Search files | `client.find.files()` | `GET /find/file?query=...` | `await client.find.files({ query: { query: "*.ts" } })` |
+| Show toast | `client.tui.showToast()` | `POST /tui/show-toast` | `await client.tui.showToast({ body: { message: "Done" } })` |
 
 **Type Definition Locations:**
 - Main path: `~/.config/opencode/node_modules/@opencode-ai/sdk/dist/v2/gen/`
 - Core files: `types.gen.d.ts` (data types), `sdk.gen.d.ts` (API methods)
 
+---
+
+## HTTP API Direct Access
+
+The SDK is a wrapper around OpenCode's HTTP REST API. You can call these endpoints directly with curl or any HTTP client.
+
+### Authentication
+
+OpenCode server uses **HTTP Basic Authentication**.
+
+**Credentials via environment variables:**
+```bash
+# Set in systemd service or shell
+export OPENCODE_SERVER_USERNAME="your-username"
+export OPENCODE_SERVER_PASSWORD="your-password"
+```
+
+**Using curl:**
+```bash
+# With -u flag
+curl -u username:password http://localhost:4096/global/health
+
+# With Authorization header
+curl -H "Authorization: Basic $(echo -n 'username:password' | base64)" \
+  http://localhost:4096/global/health
+```
+
+**Response when unauthorized:**
+```
+HTTP/1.1 401 Unauthorized
+WWW-Authenticate: Basic realm="Secure Area"
+```
+
+### Complete HTTP API Reference
+
+All endpoints use base URL: `http://localhost:4096` (default port)
+
+#### Global APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/global/health` | Health check (returns `{healthy: true, version: "1.2.15"}`) |
+| GET | `/global/config` | Get global configuration |
+| PATCH | `/global/config` | Update global configuration |
+| GET | `/global/event` | Subscribe to global events (SSE stream) |
+| POST | `/global/dispose` | Dispose all instances |
+
+#### Session APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/session` | List all sessions |
+| POST | `/session` | Create new session |
+| GET | `/session/status` | Get status of all sessions |
+| GET | `/session/{sessionID}` | Get session details |
+| PATCH | `/session/{sessionID}` | Update session (title, etc.) |
+| DELETE | `/session/{sessionID}` | Delete session |
+| GET | `/session/{sessionID}/children` | Get child sessions (forks) |
+| GET | `/session/{sessionID}/todo` | Get session TODO list |
+| POST | `/session/{sessionID}/init` | Initialize AGENTS.md |
+| POST | `/session/{sessionID}/fork` | Fork session at message point |
+| POST | `/session/{sessionID}/abort` | Abort running session |
+| POST | `/session/{sessionID}/share` | Create share link |
+| DELETE | `/session/{sessionID}/share` | Remove share link |
+| GET | `/session/{sessionID}/diff` | Get file changes from message |
+| POST | `/session/{sessionID}/summarize` | Generate session summary |
+| GET | `/session/{sessionID}/message` | Get all messages |
+| POST | `/session/{sessionID}/message` | Send prompt (streaming) |
+| GET | `/session/{sessionID}/message/{messageID}` | Get specific message |
+| DELETE | `/session/{sessionID}/message/{messageID}` | Delete message |
+| POST | `/session/{sessionID}/prompt_async` | Send prompt async |
+| POST | `/session/{sessionID}/command` | Execute command |
+| POST | `/session/{sessionID}/shell` | Execute shell command |
+| POST | `/session/{sessionID}/revert` | Revert to message |
+| POST | `/session/{sessionID}/unrevert` | Undo revert |
+| PATCH | `/session/{sessionID}/message/{messageID}/part/{partID}` | Update message part |
+| DELETE | `/session/{sessionID}/message/{messageID}/part/{partID}` | Delete message part |
+| GET | `/session/{sessionID}/permissions/{permissionID}` | Get permission request |
+
+#### Project APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/project` | List all projects |
+| GET | `/project/current` | Get current project |
+| PATCH | `/project/{projectID}` | Update project properties |
+
+#### File & Find APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/file` | Read file content |
+| GET | `/file/content` | Get file content (alternative) |
+| GET | `/file/status` | Get git status of files |
+| GET | `/find` | Search file content (grep) |
+| GET | `/find/file` | Find files by name pattern |
+| GET | `/find/symbol` | Find code symbols |
+
+#### Config APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/config` | Get configuration |
+| PATCH | `/config` | Update configuration |
+| GET | `/config/providers` | Get AI provider list |
+
+#### Auth APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| PUT | `/auth/{providerID}` | Set API key for provider |
+| DELETE | `/auth/{providerID}` | Remove auth credentials |
+
+#### Provider APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/provider` | List all AI providers |
+| GET | `/provider/auth` | Get auth methods for providers |
+| GET | `/provider/{providerID}/oauth/authorize` | Start OAuth flow |
+| GET | `/provider/{providerID}/oauth/callback` | OAuth callback |
+
+#### Permission & Question APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/permission` | List pending permissions |
+| POST | `/permission/{requestID}/reply` | Reply to permission request |
+| GET | `/question` | List pending questions |
+| POST | `/question/{requestID}/reply` | Reply to question |
+| POST | `/question/{requestID}/reject` | Reject question |
+
+#### TUI (Terminal UI) APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/tui/append-prompt` | Append text to prompt input |
+| POST | `/tui/submit-prompt` | Submit prompt |
+| POST | `/tui/clear-prompt` | Clear prompt input |
+| POST | `/tui/show-toast` | Show toast notification |
+| POST | `/tui/open-help` | Open help dialog |
+| POST | `/tui/open-sessions` | Open sessions dialog |
+| POST | `/tui/open-themes` | Open themes dialog |
+| POST | `/tui/open-models` | Open models dialog |
+| POST | `/tui/execute-command` | Execute command |
+| POST | `/tui/publish` | Publish to TUI |
+| POST | `/tui/select-session` | Select session |
+| GET | `/tui/control/next` | Get next TUI request |
+| POST | `/tui/control/response` | Send TUI response |
+
+#### PTY (Pseudo-Terminal) APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/pty` | List all PTY sessions |
+| POST | `/pty` | Create new PTY session |
+| GET | `/pty/{ptyID}` | Get PTY details |
+| PATCH | `/pty/{ptyID}` | Update PTY properties |
+| DELETE | `/pty/{ptyID}` | Remove PTY session |
+| GET | `/pty/{ptyID}/connect` | Connect to PTY (WebSocket) |
+
+#### MCP (Model Context Protocol) APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/mcp` | Get MCP server status |
+| POST | `/mcp` | Add MCP server |
+| GET | `/mcp/{name}/connect` | Connect to MCP server |
+| POST | `/mcp/{name}/disconnect` | Disconnect from MCP server |
+| POST | `/mcp/{name}/auth` | Set MCP auth |
+| DELETE | `/mcp/{name}/auth` | Remove MCP auth |
+| GET | `/mcp/{name}/auth/callback` | MCP OAuth callback |
+| POST | `/mcp/{name}/auth/authenticate` | Authenticate MCP |
+
+#### Experimental APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/experimental/tool/ids` | Get all tool IDs |
+| GET | `/experimental/tool` | Get tool list with schemas |
+| GET | `/experimental/worktree` | List worktrees |
+| POST | `/experimental/worktree` | Create worktree |
+| DELETE | `/experimental/worktree` | Remove worktree |
+| POST | `/experimental/worktree/reset` | Reset worktree |
+| GET | `/experimental/session` | List sessions (experimental) |
+| GET | `/experimental/resource` | List MCP resources |
+
+#### Other APIs
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/path` | Get current working directory info |
+| GET | `/vcs` | Get VCS (git) information |
+| GET | `/command` | List available commands |
+| POST | `/log` | Send log message |
+| GET | `/agent` | List available agents |
+| GET | `/skill` | List available skills |
+| GET | `/lsp` | Get LSP server status |
+| GET | `/formatter` | Get formatter status |
+| GET | `/event` | Subscribe to events (SSE) |
+| POST | `/instance/dispose` | Dispose current instance |
+
+### HTTP API Examples
+
+**Health check:**
+```bash
+curl -u username:password http://localhost:4096/global/health
+# {"healthy":true,"version":"1.2.15"}
+```
+
+**List sessions:**
+```bash
+curl -u username:password http://localhost:4096/session
+```
+
+**Create session:**
+```bash
+curl -u username:password -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"title":"My Session"}' \
+  http://localhost:4096/session
+```
+
+**Get current project:**
+```bash
+curl -u username:password http://localhost:4096/project/current
+```
+
+**Search files:**
+```bash
+curl -u username:password "http://localhost:4096/find/file?query=*.ts"
+```
+
+**Subscribe to events (SSE):**
+```bash
+curl -u username:password -N http://localhost:4096/global/event
+# Streams server-sent events
+```
 ---
 
 ## Installation
