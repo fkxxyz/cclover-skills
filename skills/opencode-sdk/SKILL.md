@@ -32,7 +32,7 @@ Complete reference for OpenCode SDK (@opencode-ai/sdk) - a type-safe JavaScript/
 | Show toast | `client.tui.showToast()` | `await client.tui.showToast({ body: { message: "Done" } })` |
 
 **Type Definition Locations:**
-- Main path: `~/.config/opencode/node_modules/@opencode-ai/sdk/dist/src/v2/gen/`
+- Main path: `~/.config/opencode/node_modules/@opencode-ai/sdk/dist/v2/gen/`
 - Core files: `types.gen.d.ts` (data types), `sdk.gen.d.ts` (API methods)
 
 ---
@@ -41,6 +41,38 @@ Complete reference for OpenCode SDK (@opencode-ai/sdk) - a type-safe JavaScript/
 
 ```bash
 npm install @opencode-ai/sdk
+```
+
+## ⚠️ CRITICAL: Use V2 Client
+
+**The SDK has two versions with different APIs:**
+
+❌ **V1 (Default Export)** - Limited API, missing many methods:
+```typescript
+import { createOpencodeClient } from "@opencode-ai/sdk"
+// client.global.health() does NOT exist in v1!
+// Only has: client.global.event()
+```
+
+✅ **V2 (Recommended)** - Complete API with all methods:
+```typescript
+import { createOpencodeClient } from "@opencode-ai/sdk/v2/client"
+// Has full API: health(), dispose(), config, etc.
+```
+
+**Why this matters:**
+- The default export (`@opencode-ai/sdk`) points to v1, which is incomplete
+- OpenCode's own codebase uses v2
+- Type definitions show v2 methods, but v1 runtime doesn't have them
+- This causes confusing "method is not a function" errors
+
+**Always use v2 for new code:**
+```typescript
+// ✅ Correct
+import { createOpencodeClient } from "@opencode-ai/sdk/v2/client"
+
+// ❌ Wrong - will have missing methods
+import { createOpencodeClient } from "@opencode-ai/sdk"
 ```
 
 ## Quick Start
@@ -67,7 +99,7 @@ server.close()
 **2. Client-Only Mode (Connect to Existing Server)**
 
 ```typescript
-import { createOpencodeClient } from "@opencode-ai/sdk"
+import { createOpencodeClient } from "@opencode-ai/sdk/v2/client"
 
 const client = createOpencodeClient({
   baseUrl: "http://localhost:4096",
@@ -97,12 +129,12 @@ All SDK type definitions are auto-generated from the OpenAPI specification. Afte
 
 **Most Common Path** (use this first):
 ```
-~/.config/opencode/node_modules/@opencode-ai/sdk/dist/src/v2/gen/
+~/.config/opencode/node_modules/@opencode-ai/sdk/dist/v2/gen/
 ```
 
 **Project Local Path** (if installed in a project):
 ```
-./node_modules/@opencode-ai/sdk/dist/src/v2/gen/
+./node_modules/@opencode-ai/sdk/dist/v2/gen/
 ```
 
 ### Core Files
@@ -141,26 +173,26 @@ Main API modules:
 
 ```bash
 # 1. Search for type name
-grep -n "^export type Session " ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/src/v2/gen/types.gen.d.ts
+grep -n "^export type Session " ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/v2/gen/types.gen.d.ts
 
 # 2. Read definition by line number (assuming found at line N, read 30 lines)
-sed -n 'N,N+30p' ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/src/v2/gen/types.gen.d.ts
+sed -n 'N,N+30p' ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/v2/gen/types.gen.d.ts
 
 # Or use grep to view with context
-grep -A 30 "^export type Session = {" ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/src/v2/gen/types.gen.d.ts
+grep -A 30 "^export type Session = {" ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/v2/gen/types.gen.d.ts
 ```
 
 **Finding API method signatures:**
 
 ```bash
 # Find specific method (e.g., session.prompt)
-grep -A 10 "public prompt" ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/src/v2/gen/sdk.gen.d.ts
+grep -A 10 "public prompt" ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/v2/gen/sdk.gen.d.ts
 ```
 
 **List all event types:**
 
 ```bash
-grep "^export type Event" ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/src/v2/gen/types.gen.d.ts
+grep "^export type Event" ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/v2/gen/types.gen.d.ts
 ```
 
 ### Naming Conventions
@@ -180,7 +212,7 @@ Sessions are the core concept in OpenCode, representing a conversation interacti
 
 ```typescript
 // Find complete definition:
-// grep -A 30 "^export type Session = {" ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/src/v2/gen/types.gen.d.ts
+// grep -A 30 "^export type Session = {" ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/v2/gen/types.gen.d.ts
 
 type Session = {
   id: string                    // Session ID
@@ -296,7 +328,7 @@ type Part =
   | CompactionPart    // Compaction information
 
 // Find all Part type definitions:
-// grep "^export type.*Part = {" ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/src/v2/gen/types.gen.d.ts
+// grep "^export type.*Part = {" ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/v2/gen/types.gen.d.ts
 ```
 
 ### Common Session Methods
@@ -477,7 +509,7 @@ await client.session.prompt({
 
 ```bash
 # View all methods in Session class
-grep "class Session" -A 300 ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/src/v2/gen/sdk.gen.d.ts | grep "public "
+grep "class Session" -A 300 ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/v2/gen/sdk.gen.d.ts | grep "public "
 ```
 
 ---
@@ -490,7 +522,7 @@ Projects represent a workspace (worktree), typically corresponding to a Git repo
 
 ```typescript
 // Find complete definition:
-// grep -A 20 "^export type Project = {" ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/src/v2/gen/types.gen.d.ts
+// grep -A 20 "^export type Project = {" ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/v2/gen/types.gen.d.ts
 
 type Project = {
   id: string                    // Project ID
@@ -557,7 +589,7 @@ await client.project.update({
 
 ```bash
 # View all methods in Project class
-grep "class Project" -A 100 ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/src/v2/gen/sdk.gen.d.ts | grep "public "
+grep "class Project" -A 100 ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/v2/gen/sdk.gen.d.ts | grep "public "
 ```
 
 ---
@@ -570,7 +602,7 @@ OpenCode provides real-time event streams via Server-Sent Events (SSE) for monit
 
 ```typescript
 // Find complete definition:
-// grep -A 5 "^export type GlobalEvent = {" ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/src/v2/gen/types.gen.d.ts
+// grep -A 5 "^export type GlobalEvent = {" ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/v2/gen/types.gen.d.ts
 
 type GlobalEvent = {
   directory: string             // Event source directory
@@ -691,14 +723,14 @@ for await (const event of events.stream) {
 
 ```bash
 # View all event type definitions
-grep "^export type Event" ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/src/v2/gen/types.gen.d.ts
+grep "^export type Event" ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/v2/gen/types.gen.d.ts
 ```
 
 ### View Specific Event Structure
 
 ```bash
 # For example, view EventSessionCreated definition
-grep -A 10 "^export type EventSessionCreated = {" ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/src/v2/gen/types.gen.d.ts
+grep -A 10 "^export type EventSessionCreated = {" ~/.config/opencode/node_modules/@opencode-ai/sdk/dist/v2/gen/types.gen.d.ts
 ```
 
 ---
@@ -914,8 +946,8 @@ try {
 
 ## Further Exploration
 
-- **View all type definitions**: `~/.config/opencode/node_modules/@opencode-ai/sdk/dist/src/v2/gen/types.gen.d.ts`
-- **View all API methods**: `~/.config/opencode/node_modules/@opencode-ai/sdk/dist/src/v2/gen/sdk.gen.d.ts`
+- **View all type definitions**: `~/.config/opencode/node_modules/@opencode-ai/sdk/dist/v2/gen/types.gen.d.ts`
+- **View all API methods**: `~/.config/opencode/node_modules/@opencode-ai/sdk/dist/v2/gen/sdk.gen.d.ts`
 - **Use grep to search**: `grep -r "export type YourType" ~/.config/opencode/node_modules/@opencode-ai/sdk/`
 
 The SDK provides complete TypeScript type support. You can discover more features and usage by viewing the type files.
