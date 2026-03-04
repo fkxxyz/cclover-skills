@@ -4,9 +4,21 @@ import * as path from "path";
 import * as os from "os";
 
 /**
+ * Get OpenCode configuration directory
+ * Respects OPENCODE_CONFIG_DIR environment variable
+ */
+function getOpencodeConfigDir(): string {
+  if (process.env.OPENCODE_CONFIG_DIR) {
+    return process.env.OPENCODE_CONFIG_DIR;
+  }
+  const configDir = process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config");
+  return path.join(configDir, "opencode");
+}
+
+/**
  * Cclover Skill Enhancement Plugin
  * 
- * Provides cclover_skill tool to load skills from ~/.config/opencode/cclover/skills
+ * Provides cclover_skill tool to load skills from OpenCode config directory
  */
 export const CcloverSkillEnhancementPlugin: Plugin = async (_ctx) => {
   return {
@@ -23,9 +35,9 @@ export const CcloverSkillEnhancementPlugin: Plugin = async (_ctx) => {
             throw new Error("Skill name cannot be empty");
           }
 
-          // Get cross-platform config directory
-          const configDir = process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config");
-          const baseSkillDir = path.join(configDir, "opencode", "cclover", "skills");
+          // Get OpenCode config directory (respects OPENCODE_CONFIG_DIR)
+          const opencodeConfigDir = getOpencodeConfigDir();
+          const baseSkillDir = path.join(opencodeConfigDir, "cclover", "skills");
           
           // Try direct path first: skills/{name}/SKILL.md
           let skillDir = path.join(baseSkillDir, args.name);
@@ -71,8 +83,8 @@ ${skillContent}`;
     "tool.execute.before": async (input, output) => {
       // Intercept skill tool calls for cclover hidden skills
       if (input.tool === "skill" && output.args?.name) {
-        const configDir = process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config");
-        const baseSkillDir = path.join(configDir, "opencode", "cclover", "skills");
+        const opencodeConfigDir = getOpencodeConfigDir();
+        const baseSkillDir = path.join(opencodeConfigDir, "cclover", "skills");
         
         // Check direct path first
         let skillPath = path.join(baseSkillDir, output.args.name, "SKILL.md");
