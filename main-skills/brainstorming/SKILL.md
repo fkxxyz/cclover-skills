@@ -148,10 +148,11 @@ Start by understanding the current context:
 
 **CRITICAL**: Immediately after understanding user's request, create explicit TODO list using TodoWrite.
 
-**Initial TODO creation:**
-- Identify 3-5 coarse-grained uncertainties (unless user explicitly mentions more)
-- Sort by importance (foundational questions first)
-- Use clear descriptions (flexible format, no strict rules)
+**TODO creation priority:**
+1. **List all identifiable uncertainties** - if you can identify specific unknowns, list them all (no limit)
+2. **Deep-dive user-mentioned points** - user mentions = important signal, explore around it for hidden uncertainties
+3. **Think motivation and intent** - why does user want this? What's the real need? What uncertainties hide behind the surface request?
+4. **Last resort: 3-5 exploratory questions** - only when you have zero direction
 
 **Example:**
 ```
@@ -163,10 +164,10 @@ TodoWrite:
 - [ ] Confirm infrastructure constraints
 ```
 
-**Why 3-5 TODOs?**
-- Avoids overwhelming initial list
-- Coarse-grained TODOs will be refined as you learn more
-- User may mention more aspects later
+**When user mentions specific points:**
+- Treat as high-priority signal - user mentions = likely important
+- Think: why did they mention this? What uncertainties hide around it?
+- Add TODOs exploring that area, not just surface-level questions
 
 **Sorting by importance:**
 - Foundational questions first (what/why)
@@ -190,7 +191,7 @@ TodoWrite:
 - Can ask directly? → Skip exploration
 
 **Step 3: Ask clarifying question**
-- One question at a time
+- **IRON LAW: One question at a time. No exceptions. Ask less, never more.**
 - Prefer multiple choice when possible
 - Open-ended when necessary
 - Focus on: purpose, constraints, success criteria, technical requirements
@@ -417,7 +418,7 @@ For Google OAuth integration, do you already have Google Cloud credentials set u
 
 ### Creation
 - **Timing**: Immediately after understanding user's request
-- **Quantity**: 3-5 coarse-grained TODOs (unless user explicitly mentions more)
+- **Quantity**: List all identifiable uncertainties. 3-5 only when zero direction (last resort).
 - **Sorting**: By importance (foundational first, dependent later)
 - **Description**: Clear and flexible, no strict format required
 
@@ -551,7 +552,7 @@ To help me understand "good", could you share:
 - Final confirmation catches any missed aspects
 
 ### Progressive Refinement
-- Start with coarse-grained TODOs (3-5)
+- Start with all identifiable uncertainties (3-5 only if no direction)
 - Refine as you learn more
 - Stop refining when clear enough to ask
 
@@ -569,9 +570,10 @@ To help me understand "good", could you share:
 | Thinking "I remember all uncertainties" | Memory fails, especially with complex requests | Trust the TODO list, not your memory |
 | Stopping when "feeling done" | Subjective feeling ≠ objective completion | Check TODO list: any uncompleted items? |
 | Skipping final confirmation | Misses user's last chance to add aspects | Always ask "anything I missed?" when TODOs done |
-| Creating too many initial TODOs | Overwhelming, hard to manage | Start with 3-5 coarse-grained TODOs |
+| Defaulting to 3-5 without thinking | Misses real uncertainties | List all identifiable uncertainties first, 3-5 only as last resort |
 | Over-refining TODOs | TODO explosion, loses focus | Limit refinement to 3-5 sub-TODOs |
 | Exploring without uncertainty | Wastes time, looks aimless | Explore only for known uncertainties |
+| Asking multiple questions at once | Splits user attention, poor answers | ONE question at a time, no exceptions |
 | Proposing designs during brainstorming | Wrong phase, premature | Brainstorming is for clarification only |
 | Assuming implementation is desired | Presumptuous | Wait for explicit instruction or invoke brainstorming-complete |
 
@@ -587,6 +589,7 @@ If you're thinking:
 - "User seems satisfied but..." → User satisfaction = stop signal
 - "Let me propose some options" → Are you designing instead of clarifying?
 - "I have enough info, I'll implement" → Did user explicitly ask for implementation?
+- "Let me ask about A, B, and C" → ONE question at a time. No exceptions.
 
 **All of these mean: Stop and check your TODO list or evaluate if you're adding value.**
 
