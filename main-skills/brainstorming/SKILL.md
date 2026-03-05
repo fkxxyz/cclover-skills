@@ -195,10 +195,11 @@ TodoWrite:
 - Prefer multiple choice when possible
 - Open-ended when necessary
 - Focus on: purpose, constraints, success criteria, technical requirements
+- If user asks back, answer and re-ask. Mark completed only after actual answer.
 
 ### 4. Update TODO List After Each Answer
 
-**After receiving answer:**
+**After receiving user's answer to your question:**
 
 **Step 1: Mark current TODO as completed**
 ```
@@ -567,6 +568,7 @@ To help me understand "good", could you share:
 |---------|----------------|--------------|
 | Not creating TODO list | Relies on memory, causes omissions | Create TODO list immediately after user request |
 | Not updating TODO after each answer | Loses track of new uncertainties | Mark completed + add new TODOs after EVERY answer |
+| Marking TODO completed on user's question | User's clarifying question ≠ answer | Answer user's question, re-ask yours, wait for actual answer |
 | Thinking "I remember all uncertainties" | Memory fails, especially with complex requests | Trust the TODO list, not your memory |
 | Stopping when "feeling done" | Subjective feeling ≠ objective completion | Check TODO list: any uncompleted items? |
 | Skipping final confirmation | Misses user's last chance to add aspects | Always ask "anything I missed?" when TODOs done |
