@@ -24,9 +24,19 @@ export const CcloverSkillEnhancementPlugin: Plugin = async (_ctx) => {
   return {
     tool: {
       cclover_skill: tool({
-        description: "When a skill needs to load another skill not in system prompt, just use this tool!",
+        description: `Load skills that are NOT in the <available_items> list in system prompt.
+
+WHEN TO USE:
+- The skill you need is not listed in <available_items>
+- You need to dynamically load a custom/new skill
+
+WHEN NOT TO USE:
+- If the skill appears in <available_items> → use 'skill' tool instead
+- If the skill has a "cclover/" prefix in the list → still use 'skill' tool
+
+This tool is for dynamic/runtime skill loading only.`,
         args: {
-          name: tool.schema.string().describe("Skill name (without .md extension)"),
+          name: tool.schema.string().describe("Skill name (without .md extension). Do NOT use this for skills in <available_items> - use 'skill' tool instead."),
           user_message: tool.schema.string().optional().describe("Optional user message"),
         },
         async execute(args, _context) {
@@ -115,7 +125,18 @@ ${skillContent}`;
 
     "tool.definition": async (input, output) => {
       if (input.toolID === "skill") {
-        output.description = "Load a skill by name. Available skills are listed in the system prompt. If the skill you need is not in the system prompt, use 'cclover_skill' tool instead.";
+        output.description = `Load a skill by name from the available_skills list in the system prompt.
+
+CRITICAL DECISION PROCESS:
+1. First, check the <available_items> section in system prompt
+2. Find the exact skill name (including any prefix like "cclover/")
+3. Use that EXACT name with this tool
+
+Example:
+- If you see "cclover/opencode" in the list → use skill(name="cclover/opencode")
+- If you see "brainstorming" in the list → use skill(name="brainstorming")
+
+ONLY use 'cclover_skill' tool if the skill you need is NOT listed in <available_items>.`;
       }
     },
   };
