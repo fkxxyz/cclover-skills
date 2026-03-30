@@ -15,16 +15,59 @@ function getOpencodeConfigDir(): string {
   return path.join(configDir, "opencode");
 }
 
-/**
- * Cclover Skill Enhancement Plugin
- * 
- * Provides cclover_skill tool to load skills from OpenCode config directory
- */
-export const CcloverSkillEnhancementPlugin: Plugin = async (_ctx) => {
-  return {
-    tool: {
-      cclover_skill: tool({
-        description: `Load skills that are NOT in the <available_items> list in system prompt.
+function listLoadableSkillNames(baseSkillDir: string): string[] {
+  if (!fs.existsSync(baseSkillDir)) {
+    return [];
+  }
+
+  const skillNames = new Set<string>();
+  const isTraversableDirectory = (targetPath: string): boolean => {
+    try {
+      return fs.statSync(targetPath).isDirectory();
+    } catch {
+      return false;
+    }
+  };
+
+  const hasSkillFile = (targetPath: string): boolean => {
+    try {
+      return fs.existsSync(path.join(targetPath, "SKILL.md"));
+    } catch {
+      return false;
+    }
+  };
+
+  for (const dirent of fs.readdirSync(baseSkillDir, { withFileTypes: true })) {
+    const firstLevelPath = path.join(baseSkillDir, dirent.name);
+    if (!isTraversableDirectory(firstLevelPath)) continue;
+
+    if (hasSkillFile(firstLevelPath)) {
+      skillNames.add(dirent.name);
+      continue;
+    }
+
+    for (const nestedDirent of fs.readdirSync(firstLevelPath, { withFileTypes: true })) {
+      const secondLevelPath = path.join(firstLevelPath, nestedDirent.name);
+      if (!isTraversableDirectory(secondLevelPath)) continue;
+      if (hasSkillFile(secondLevelPath)) {
+        skillNames.add(nestedDirent.name);
+      }
+    }
+  }
+
+  return [...skillNames].sort();
+}
+
+function buildCcloverSkillDescription(baseSkillDir: string): string {
+  const skillNames = listLoadableSkillNames(baseSkillDir);
+  const skillList = skillNames.length
+    ? skillNames.map((name) => `- ${name}`).join("\n")
+    : "- (none currently available)";
+
+  return `Load skills that are NOT in the <available_items> list in system prompt.
+
+Currently loadable skills:
+${skillList}
 
 WHEN TO USE:
 - The skill you need is not listed in <available_items>
@@ -34,7 +77,22 @@ WHEN NOT TO USE:
 - If the skill appears in <available_items> → use 'skill' tool instead
 - If the skill has a "cclover/" prefix in the list → still use 'skill' tool
 
-This tool is for dynamic/runtime skill loading only.`,
+This tool is for dynamic/runtime skill loading only.`;
+}
+
+/**
+ * Cclover Skill Enhancement Plugin
+ * 
+ * Provides cclover_skill tool to load skills from OpenCode config directory
+ */
+export const CcloverSkillEnhancementPlugin: Plugin = async (_ctx) => {
+  const opencodeConfigDir = getOpencodeConfigDir();
+  const baseSkillDir = path.join(opencodeConfigDir, "cclover", "skills");
+
+  return {
+    tool: {
+      cclover_skill: tool({
+        description: buildCcloverSkillDescription(baseSkillDir),
         args: {
           name: tool.schema.string().describe("Skill name (without .md extension). Do NOT use this for skills in <available_items> - use 'skill' tool instead."),
           user_message: tool.schema.string().optional().describe("Optional user message"),
@@ -46,9 +104,6 @@ This tool is for dynamic/runtime skill loading only.`,
           }
 
           // Get OpenCode config directory (respects OPENCODE_CONFIG_DIR)
-          const opencodeConfigDir = getOpencodeConfigDir();
-          const baseSkillDir = path.join(opencodeConfigDir, "cclover", "skills");
-          
           // Try direct path first: skills/{name}/SKILL.md
           let skillDir = path.join(baseSkillDir, args.name);
           let skillPath = path.join(skillDir, "SKILL.md");
