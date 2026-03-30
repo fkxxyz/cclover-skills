@@ -97,7 +97,7 @@ After installation, ask the agent in a new session: "What skills do you have ava
 
 - **brainstorming** - Help users clarify vague ideas and requirements through iterative exploration and targeted questioning
 - **brainstorming-complete** - Decide next action after brainstorming ends, avoiding unauthorized execution
-- **opencode** - Entry point for all OpenCode-related work (plugins, SDK, configuration, APIs)
+- **opencode** - OpenCode entry point with concise basic usage guidance plus routing for configuration, SDK, plugins, and APIs
 - **writing-agents-module-level** - Write module-level AGENTS.md documentation (30-second quick orientation guide)
 - **writing-agents-user-level** - Write user-level AGENTS.md documentation (system environment and personalized configuration)
 - **writing-agents-project-root** - Write project-root AGENTS.md documentation (complete development guide)
