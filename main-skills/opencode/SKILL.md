@@ -68,6 +68,35 @@ opencode models
 - Global: `~/.config/opencode/opencode.json`
 - Project: `./opencode.json`
 
+### Where OpenCode loads things from
+
+OpenCode does not only read `opencode.json`.
+
+- Global config and customizations: `~/.config/opencode/`
+- Project-local customizations: `./.opencode/`
+- User-local customizations: `~/.opencode/`
+- Custom config directory: `OPENCODE_CONFIG_DIR`
+- Custom config file: `OPENCODE_CONFIG`
+- Inline config override: `OPENCODE_CONFIG_CONTENT`
+- Remote org defaults: `.well-known/opencode`
+- Stored provider auth: `~/.local/share/opencode/auth.json`
+
+Common auto-discovered subdirectories include:
+
+- `agents/`
+- `commands/`
+- `modes/`
+- `plugins/`
+- `skills/`
+- `tools/`
+- `themes/`
+
+Also note:
+
+- secrets and per-environment values often come from env vars or `{env:VAR}`
+- server auth is often env-driven (`OPENCODE_SERVER_PASSWORD`, `OPENCODE_SERVER_USERNAME`)
+- provider config and provider auth are related but separate
+
 ### Important commands to know exist
 
 - `opencode serve`
