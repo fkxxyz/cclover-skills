@@ -1,6 +1,6 @@
 ---
 name: opencode
-description: Use for OpenCode questions in general, including basic CLI/TUI usage, configuration, plugins, SDK, and APIs. Answers basic usage directly and routes deeper topics to specialized skills.
+description: Use for any OpenCode question, and for any question about the assistant itself in the current environment. If the user is asking about OpenCode or about the assistant’s own model, capabilities, limits, tools, permissions, configuration, or behavior, this skill applies.
 ---
 
 # OpenCode Entry Point
@@ -9,18 +9,19 @@ description: Use for OpenCode questions in general, including basic CLI/TUI usag
 
 Entry point for OpenCode questions.
 
-This skill handles **basic day-to-day usage directly** with concise guidance, and **routes deeper questions** to specialized skills for configuration, SDK, and plugin development.
+This skill handles **basic day-to-day usage directly** with concise guidance, **treats self-management requests as action candidates first**, and **routes deeper questions** to specialized skills for configuration, SDK, and plugin development.
 
-**Core principle**: Keep basic usage answers short and practical. Prefer pointing users to `opencode --help` and the official docs for command details, then load specialized skills only when the question goes beyond everyday usage.
+**Core principle**: Keep basic usage answers short and practical. For requests about the assistant’s own current runtime, configuration, or behavior, prefer autonomous inspection and modification over instructional answers. For CLI commands, flags, and subcommands, prefer `opencode --help` first, then the official docs. For configuration, SDK, plugins, and other non-CLI behavior, load specialized skills first when needed. If the skills are insufficient, consult official docs and web search; read source code only as a last resort.
 
 ## Official Docs
 
-- Docs home: `https://open-code.ai/docs/en/`
-- CLI docs: `https://open-code.ai/docs/en/cli`
-- Config docs: `https://open-code.ai/docs/en/config`
-- Providers docs: `https://open-code.ai/docs/en/providers`
+- Docs home: `https://opencode.ai/docs/`
+- CLI docs: `https://opencode.ai/docs/cli/`
+- Config docs: `https://opencode.ai/docs/config/`
+- Providers docs: `https://opencode.ai/docs/providers/`
+- Source repository: `https://github.com/anomalyco/opencode`
 
-When users need command details, flags, or subcommands, prefer:
+When users need CLI command details, flags, or subcommands, prefer:
 
 ```bash
 opencode --help
@@ -106,7 +107,7 @@ Also note:
 - `opencode stats`
 - `opencode mcp list`
 
-For anything beyond these basics, prefer `opencode --help` first, then route to the specialized skills below.
+For anything beyond these basics, use `opencode --help` first only for CLI-entry questions. Otherwise, route to the specialized skills below first; if they are insufficient, consult official docs, then web search, and read source code last.
 
 ## When to Use
 
@@ -119,11 +120,16 @@ Use this skill when the user's question involves any of the following:
 - `@opencode-ai/plugin` plugin development
 - `@opencode-ai/sdk` or programmatic control
 - OpenCode APIs or interfaces
+- The assistant’s own current model, provider, permissions, tools, skills, agents, modes, configuration, or runtime behavior
 - Any combination of the above
 
 ## Routing Logic
 
-**Step 1: Identify whether basic usage is enough**
+**Step 1: Determine whether this is a general OpenCode question or a self-management request**
+
+If the user is asking about the assistant’s own current runtime, model, provider, permissions, tools, skills, agents, modes, configuration, or behavior, treat it as a self-management request. Prefer inspecting the live environment and making necessary non-destructive changes directly, rather than defaulting to instructional answers.
+
+**Step 2: Identify whether basic usage is enough**
 
 Basic usage questions can be answered directly from this skill:
 
@@ -136,7 +142,7 @@ Basic usage questions can be answered directly from this skill:
 
 If the user only needs a quick orientation, answer directly and keep it concise.
 
-**Step 2: If the question goes deeper, identify the technical domains involved**
+**Step 3: If the question goes deeper, identify the technical domains involved**
 
 ### Plugin Development
 
@@ -171,7 +177,7 @@ Load `opencode-configuration` when the question involves:
 
 Treat env vars, startup overrides, auto-discovered directories, and behavior toggles as configuration even when they are not expressed as `opencode.json` fields.
 
-**Step 3: Check whether the request is exploratory**
+**Step 4: Check whether the request is exploratory**
 
 Exploratory requests need brainstorming first:
 
@@ -183,6 +189,8 @@ Exploratory requests need brainstorming first:
 When exploratory, load `brainstorming` together with all relevant technical skills in one message.
 
 ## Routing Table
+
+Apply the table below to choose the initial routing path. If specialized skills are insufficient, consult official docs next, then web search, and read source code last.
 
 | Request Type | Technical Domains | Action |
 |--------------|-------------------|--------|
@@ -206,7 +214,7 @@ When exploratory, load `brainstorming` together with all relevant technical skil
 | Exploratory | Plugin + SDK | Load `brainstorming`, `opencode-plugin-development`, `opencode-sdk` |
 | Exploratory | All three | Load `brainstorming`, `opencode-plugin-development`, `opencode-sdk`, `opencode-configuration` |
 
-**Key principle**: Do not load specialized skills for simple getting-started questions. Do load all relevant specialized skills together for deeper technical questions.
+**Key principle**: Do not load specialized skills for simple getting-started questions. For deeper technical questions, load all relevant specialized skills together first, then consult official docs, web search, and source code as needed.
 
 ## Examples
 
@@ -255,19 +263,25 @@ When exploratory, load `brainstorming` together with all relevant technical skil
 | Mistake | Why It's Wrong | How to Avoid |
 |---------|----------------|--------------|
 | Treating every OpenCode question as advanced | Basic questions do not need heavy routing | Answer basic usage directly first |
+| Treating self-management requests as documentation questions | Loses agency and pushes work back to the user | First decide whether the request is about the assistant’s own current runtime |
 | Turning this skill into a full manual | Duplicates official docs and `--help` | Keep basics minimal and link out |
 | Loading one specialized skill when multiple domains are involved | Misses cross-domain context | Load all relevant technical skills together |
 | Loading brainstorming for simple getting-started questions | Adds unnecessary overhead | Use brainstorming only for actual design uncertainty |
-| Explaining config details from memory | Risks incorrect or incomplete guidance | Route deeper config questions to `opencode-configuration` |
+| Explaining config details from memory | Risks incorrect or incomplete guidance | Inspect live state when possible, then route deeper config questions if needed |
+| Giving instructions for changes the assistant could make directly | Reduces usefulness when direct action is possible | Inspect live state first, then act when the change is non-destructive |
+| Routing too early to specialized skills | Specialized knowledge should improve correctness, not replace action | Keep agency after routing and return to direct execution |
 
 ## Red Flags - Check Yourself
 
 If you're thinking:
 
 - "I'll answer every OpenCode question from this one skill" → Route deeper topics
-- "I'll paste a huge CLI reference here" → Point to `opencode --help` instead
+- "I'll explain how to change it" → Check whether the user actually wants me to change my own config directly
+- "I'll paste a huge CLI reference here" → Point to `opencode --help` instead for CLI details
+- "This is probably just a config question" → First decide whether it is about my own current runtime
 - "This basic question probably needs SDK/config/plugin docs" → Check if direct answer is enough first
 - "I'll load brainstorming because the user said 'how do I use'" → That's usually basic usage, not design
 - "I'll only load one specialized skill" → Check for multi-domain overlap
+- "I should route this away immediately" → Routing should improve correctness, not replace action
 
-**All of these mean: Stop and decide whether the user needs a concise orientation or a specialized reference.**
+**All of these mean: Stop and decide whether the user needs a concise orientation, direct self-management action, or a specialized reference.**
