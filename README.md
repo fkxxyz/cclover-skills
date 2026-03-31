@@ -34,9 +34,11 @@ cd cclover-skills
 # User-level skills directory
 ln -s "$(pwd)/main-skills" ~/.config/opencode/skills/cclover
 
-# Additional skills installation
-mkdir -p ~/.config/opencode/cclover
-ln -sf "$(pwd)/skills" ~/.config/opencode/cclover/skills
+# Additional skills installation (nested skill system)
+mkdir -p ~/.config/opencode/cclover/skills
+ln -s "$(pwd)/skills" ~/.config/opencode/cclover/skills/cclover
+
+# Plugin installation
 mkdir -p ~/.config/opencode/plugins
 ln -sf "$(pwd)/.opencode/plugin"/* ~/.config/opencode/plugins/
 ```

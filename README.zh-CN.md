@@ -29,10 +29,12 @@ cd cclover-skills
 # 用户级技能目录
 ln -s "$(pwd)/main-skills" ~/.config/opencode/skills/cclover
 
-# 额外技能安装
+# 额外技能安装（嵌套技能系统）
+mkdir -p ~/.config/opencode/cclover/skills
+ln -s "$(pwd)/skills" ~/.config/opencode/cclover/skills/cclover
+
+# 插件安装
 mkdir -p ~/.config/opencode/plugins
-ln -sf "$(pwd)/skills" ~/.config/opencode/cclover/skills
-mkdir -p ~/.config/opencode/plugin
 ln -sf "$(pwd)/.opencode/plugin"/* ~/.config/opencode/plugins/
 ```
 

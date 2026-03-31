@@ -110,8 +110,16 @@ export const CcloverSkillEnhancementPlugin: Plugin = async (_ctx) => {
           
           if (!fs.existsSync(skillPath)) {
             // Try nested path: skills/*/{name}/SKILL.md
+            // Use statSync instead of dirent.isDirectory() to follow symlinks
             const categories = fs.readdirSync(baseSkillDir, { withFileTypes: true })
-              .filter(dirent => dirent.isDirectory())
+              .filter(dirent => {
+                // dirent.isDirectory() returns false for symlinks, use statSync to follow them
+                try {
+                  return fs.statSync(path.join(baseSkillDir, dirent.name)).isDirectory();
+                } catch {
+                  return false;
+                }
+              })
               .map(dirent => dirent.name);
             
             for (const category of categories) {
@@ -157,8 +165,16 @@ ${skillContent}`;
         
         // Check nested paths if not found
         if (!found) {
+          // Use statSync instead of dirent.isDirectory() to follow symlinks
           const categories = fs.readdirSync(baseSkillDir, { withFileTypes: true })
-            .filter(dirent => dirent.isDirectory())
+            .filter(dirent => {
+              // dirent.isDirectory() returns false for symlinks, use statSync to follow them
+              try {
+                return fs.statSync(path.join(baseSkillDir, dirent.name)).isDirectory();
+              } catch {
+                return false;
+              }
+            })
             .map(dirent => dirent.name);
           
           for (const category of categories) {
