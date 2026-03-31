@@ -66,7 +66,7 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
   return {
     tool: {
       cclover_agent: tool({
-        description: "Create a new OpenCode session and delegate a task to a specified agent. Supports both synchronous and asynchronous execution modes.",
+        description: "Use whenever work can be cleanly separated into an independent task for another agent, even if it is small or simple. Prefer spawning sub-agents aggressively when work can be split into multiple independent tasks that can run in parallel. Pass relevant context through reference_docs whenever possible so the task prompt stays short, focused, and easy to follow. Common examples include researching separate questions, modifying different files, reviewing multiple areas of code, exploring different directions within the same codebase, and comparing alternative implementations in parallel.",
         args: {
           prompt: tool.schema.string().describe("Task description to send to the new session"),
           agent: tool.schema.string().describe("Agent type (e.g., 'build', 'explore', 'librarian', 'oracle')"),
@@ -192,7 +192,7 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
         },
       }),
       cclover_agent_result: tool({
-        description: "Get the current or final result of a delegated agent session.",
+        description: "Use after handing work off to a sub-agent when you want to check progress, inspect the latest visible result, or wait for the final answer, instead of re-running the same task.",
         args: {
           session_id: tool.schema.string().describe("Delegated agent session ID"),
           wait: tool.schema.boolean().describe("Wait for completion or return current result immediately"),
