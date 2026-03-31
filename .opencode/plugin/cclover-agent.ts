@@ -85,8 +85,12 @@ async function fetchSessionResult(ctx: any, sessionID: string): Promise<AgentRes
       path: { id: sessionID },
     });
 
-    const lastAssistantMessage = getLastAssistantMessage(messages.data as MessageLike[]);
-    const lastAssistantMessageWithText = getLastAssistantMessageWithText(messages.data as MessageLike[]);
+    const messageList = Array.isArray(messages.data)
+      ? (messages.data as MessageLike[])
+      : [];
+
+    const lastAssistantMessage = getLastAssistantMessage(messageList);
+    const lastAssistantMessageWithText = getLastAssistantMessageWithText(messageList);
     const result = buildResultPayload(sessionID, session.data, lastAssistantMessage);
 
     if (!result.partial_content && lastAssistantMessageWithText) {

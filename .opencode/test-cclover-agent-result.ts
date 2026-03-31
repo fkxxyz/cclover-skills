@@ -154,6 +154,20 @@ async function main() {
         },
       ],
     },
+    ses_missing_messages: {
+      session: {
+        id: "ses_missing_messages",
+        title: "Missing messages payload session",
+        version: "test",
+        projectID: "proj_1",
+        directory: "/test/directory",
+        time: {
+          created: sessionCreatedAt,
+          updated: now,
+        },
+      },
+      messages: undefined,
+    },
   };
 
   const mockContext = {
@@ -245,6 +259,24 @@ async function main() {
     assert.equal(fallbackResults[0].content, null);
     assert.equal(fallbackResults[0].partial_content, "earlier assistant text");
     assert.equal(fallbackResults[0].error, null);
+
+    const rawMissingMessages = await hooks.tool.cclover_agent_result.execute(
+      {
+        session_ids: ["ses_missing_messages"],
+        wait: "none",
+      },
+      mockContext as any,
+    );
+
+    const missingMessagesResults = JSON.parse(rawMissingMessages);
+    assert.ok(Array.isArray(missingMessagesResults));
+    assert.equal(missingMessagesResults.length, 1);
+    assert.equal(missingMessagesResults[0].session_id, "ses_missing_messages");
+    assert.equal(missingMessagesResults[0].status, "running");
+    assert.equal(missingMessagesResults[0].content, null);
+    assert.equal(missingMessagesResults[0].partial_content, null);
+    assert.equal(missingMessagesResults[0].error, null);
+    assert.equal(missingMessagesResults[0].duration_ms, now - sessionCreatedAt);
   } finally {
     Date.now = originalNow;
   }
