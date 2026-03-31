@@ -5,6 +5,23 @@ import { existsSync } from "node:fs";
 
 const POLL_INTERVAL_MS = 1000;
 
+type AgentResultStatus = "running" | "completed" | "error" | "not_found";
+type WaitMode = "none" | "any" | "all";
+
+type MessageLike = {
+  info: any;
+  parts: Array<{ type: string; [key: string]: any }>;
+};
+
+type AgentResultPayload = {
+  session_id: string;
+  status: AgentResultStatus;
+  content: string | null;
+  partial_content: string | null;
+  error: string | null;
+  duration_ms: number;
+};
+
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -16,26 +33,26 @@ function extractTextContent(parts: Array<{ type: string; [key: string]: any }>) 
     .join("\n") || null;
 }
 
-function getLastAssistantMessage(messages: Array<{ info: any; parts: Array<{ type: string; [key: string]: any }> }>) {
+function getLastAssistantMessage(messages: MessageLike[]) {
   return messages
     .filter((message) => message.info?.role === "assistant")
     .sort((a, b) => (a.info?.time?.created ?? 0) - (b.info?.time?.created ?? 0))
     .at(-1);
 }
 
-function getLastAssistantMessageWithText(messages: Array<{ info: any; parts: Array<{ type: string; [key: string]: any }> }>) {
+function getLastAssistantMessageWithText(messages: MessageLike[]) {
   return messages
     .filter((message) => message.info?.role === "assistant")
     .sort((a, b) => (b.info?.time?.created ?? 0) - (a.info?.time?.created ?? 0))
     .find((message) => Boolean(extractTextContent(message.parts)));
 }
 
-function buildResultPayload(sessionID: string, session: any, lastAssistantMessage: any) {
+function buildResultPayload(sessionID: string, session: any, lastAssistantMessage: any): AgentResultPayload {
   const partialContent = lastAssistantMessage ? extractTextContent(lastAssistantMessage.parts) : null;
   const hasCompleted = Boolean(lastAssistantMessage?.info?.time?.completed);
   const hasError = Boolean(lastAssistantMessage?.info?.error);
 
-  let status: "running" | "completed" | "error" = "running";
+  let status: AgentResultStatus = "running";
   if (hasError) status = "error";
   else if (hasCompleted) status = "completed";
 
@@ -55,6 +72,56 @@ function buildResultPayload(sessionID: string, session: any, lastAssistantMessag
       : null,
     duration_ms: Math.max(0, endTime - (session.time?.created ?? endTime)),
   };
+}
+
+async function fetchSessionResult(ctx: any, sessionID: string): Promise<AgentResultPayload> {
+  try {
+    const session = await ctx.client.session.get({
+      path: { id: sessionID },
+    });
+
+    const messages = await ctx.client.session.messages({
+      path: { id: sessionID },
+    });
+
+    const lastAssistantMessage = getLastAssistantMessage(messages.data as MessageLike[]);
+    const lastAssistantMessageWithText = getLastAssistantMessageWithText(messages.data as MessageLike[]);
+    const result = buildResultPayload(sessionID, session.data, lastAssistantMessage);
+
+    if (!result.partial_content && lastAssistantMessageWithText) {
+      result.partial_content = extractTextContent(lastAssistantMessageWithText.parts);
+    }
+
+    return result;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const isNotFound = /not found/i.test(errorMessage);
+
+    return {
+      session_id: sessionID,
+      status: isNotFound ? "not_found" : "error",
+      content: null,
+      partial_content: null,
+      error: errorMessage,
+      duration_ms: 0,
+    };
+  }
+}
+
+function shouldReturnResults(results: AgentResultPayload[], waitMode: WaitMode) {
+  if (waitMode === "none") {
+    return true;
+  }
+
+  const terminalStatuses: AgentResultStatus[] = ["completed", "error", "not_found"];
+  const hasAnyTerminal = results.some((result) => terminalStatuses.includes(result.status));
+  const allTerminal = results.every((result) => terminalStatuses.includes(result.status));
+
+  if (waitMode === "any") {
+    return hasAnyTerminal;
+  }
+
+  return allTerminal;
 }
 
 /**
@@ -192,48 +259,22 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
         },
       }),
       cclover_agent_result: tool({
-        description: "Use after handing work off to a sub-agent when you want to check progress, inspect the latest visible result, or wait for the final answer, instead of re-running the same task.",
+        description: "Use after handing work off to one or more sub-agents when you want to check progress, inspect the latest visible result, or wait for either the first finished answer or all finished answers, instead of re-running the same tasks.",
         args: {
-          session_id: tool.schema.string().describe("Delegated agent session ID"),
-          wait: tool.schema.boolean().describe("Wait for completion or return current result immediately"),
+          session_ids: tool.schema.array(tool.schema.string()).describe("Delegated agent session IDs"),
+          wait: tool.schema.enum(["none", "any", "all"]).describe("Return immediately, wait until any session finishes, or wait until all sessions finish"),
         },
         async execute(args) {
-          try {
-            while (true) {
-              const session = await ctx.client.session.get({
-                path: { id: args.session_id },
-              });
+          while (true) {
+            const results = await Promise.all(
+              args.session_ids.map((sessionID: string) => fetchSessionResult(ctx, sessionID)),
+            );
 
-              const messages = await ctx.client.session.messages({
-                path: { id: args.session_id },
-              });
-
-              const lastAssistantMessage = getLastAssistantMessage(messages.data as any);
-              const lastAssistantMessageWithText = getLastAssistantMessageWithText(messages.data as any);
-              const result = buildResultPayload(args.session_id, session.data, lastAssistantMessage);
-
-              if (!result.partial_content && lastAssistantMessageWithText) {
-                result.partial_content = extractTextContent(lastAssistantMessageWithText.parts);
-              }
-
-              if (!args.wait || result.status === "completed" || result.status === "error") {
-                return JSON.stringify(result);
-              }
-
-              await sleep(POLL_INTERVAL_MS);
+            if (shouldReturnResults(results, args.wait as WaitMode)) {
+              return JSON.stringify(results);
             }
-          } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : String(error);
-            const isNotFound = /not found/i.test(errorMessage);
 
-            return JSON.stringify({
-              session_id: args.session_id,
-              status: isNotFound ? "not_found" : "error",
-              content: null,
-              partial_content: null,
-              error: errorMessage,
-              duration_ms: 0,
-            });
+            await sleep(POLL_INTERVAL_MS);
           }
         },
       }),
