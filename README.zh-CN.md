@@ -92,7 +92,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.cursor\skills\cclover" 
 
 - **brainstorming** - 通过迭代探索和针对性提问帮助用户澄清模糊想法和需求
 - **brainstorming-complete** - 头脑风暴结束后决定下一步行动，避免擅自执行
-- **opencode** - OpenCode 的统一入口，提供精简基本用法说明，并路由到配置、SDK、插件和 API 专项技能
+- **opencode** - OpenCode 的统一入口，提供精简基本用法说明，并按完整配置面、SDK、插件和 API 路由到对应专项技能
 - **writing-agents-module-level** - 编写模块级 AGENTS.md 文档（30秒快速导向指南）
 - **writing-agents-user-level** - 编写用户级 AGENTS.md 文档（系统环境和个性化配置）
 - **writing-agents-project-root** - 编写项目根级 AGENTS.md 文档（完整开发指南）

@@ -162,11 +162,14 @@ Load `opencode-sdk` when the question involves:
 
 Load `opencode-configuration` when the question involves:
 
-- `opencode.json` or `opencode.jsonc`
-- Provider or model configuration
-- MCP servers, LSP servers
-- Permissions, commands, agents
-- Advanced config behavior or precedence
+- any OpenCode configuration surface, not just `opencode.json`
+- config files such as `opencode.json` or `opencode.jsonc`
+- environment variables, runtime toggles, or feature flags
+- config loading, discovery, precedence, or override behavior
+- provider/model setup, credentials, or variable substitution
+- agents, commands, permissions, MCP, LSP, plugins, skills, or server settings
+
+Treat env vars, startup overrides, auto-discovered directories, and behavior toggles as configuration even when they are not expressed as `opencode.json` fields.
 
 **Step 3: Check whether the request is exploratory**
 
@@ -216,6 +219,21 @@ When exploratory, load `brainstorming` together with all relevant technical skil
 
 - Question: "How do I set the default model in OpenCode?"
 - Action: Briefly mention config file location, then load `opencode-configuration`
+
+### Example 2b: Env/config surface
+
+- Question: "How do I use `OPENCODE_CONFIG_CONTENT`?"
+- Action: Load `opencode-configuration`
+
+### Example 2c: Runtime toggle
+
+- Question: "How do I disable LSP auto-download?"
+- Action: Load `opencode-configuration`
+
+### Example 2d: Discovery/config source
+
+- Question: "Where does OpenCode load skills or plugins from?"
+- Action: Load `opencode-configuration`
 
 ### Example 3: SDK only
 
