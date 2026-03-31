@@ -23,6 +23,12 @@ cclover-skills/
 │   ├── helper-skill/
 │   │   └── SKILL.md
 │   └── ...
+├── agents/              # Agent 定义（提示词文件）
+├── .opencode/           # OpenCode 插件系统
+│   └── plugin/          # OpenCode 插件
+│       ├── cclover-agent.ts   # 子代理委派工具
+│       ├── cclover-agents.ts  # Agent 定义与配置
+│       └── cclover-skills.ts  # 动态技能加载工具
 ├── AGENTS.md           # 本文件
 └── README.md           # 项目说明
 ```
@@ -30,6 +36,8 @@ cclover-skills/
 **目录结构说明**：
 - **main-skills/**: 安装到 AI 助手系统的面向用户技能
 - **skills/**: main-skills 用于嵌套加载的内部技能（不直接暴露给用户）
+- **agents/**: Agent 定义文件（提示词）
+- **.opencode/**: 扩展 Agent 能力的 OpenCode 插件系统
 
 ## 嵌套技能系统
 
@@ -39,6 +47,39 @@ cclover-skills/
 - `main-skills/` 中的技能可以使用 `skill` 工具（由 MCP 服务提供）从 `skills/` 目录加载技能
 - 这使得模块化技能设计成为可能，而不会向最终用户暴露内部实现细节
 - `cclover-skill` 工具接受技能名称并从 `skills/{skill-name}/SKILL.md` 加载相应的 SKILL.md
+
+## OpenCode 插件系统
+
+本项目包含一个扩展 Agent 能力的 OpenCode 插件系统。
+
+### 插件概览
+
+**cclover-agent.ts** — 子代理委派工具
+- 提供创建和管理委派 Agent 会话的工具
+- `cclover_agent`: 创建新会话并将任务委派给指定 Agent 类型
+- `cclover_agent_result`: 检查进度或检索委派会话的结果
+- `cclover_agent_stop`: 停止运行中的委派会话
+
+**cclover-agents.ts** — Agent 定义与配置
+- 向 OpenCode 注册自定义 Agent 定义
+- 从 `agents/` 目录加载 Agent 提示词
+- 配置 Agent 特定设置（temperature、permissions、color）
+- 设置项目的默认 Agent
+
+**cclover-skills.ts** — 动态技能加载
+- 提供 `cclover_skill` 工具用于加载不在系统提示中的技能
+- 从 OpenCode 配置目录搜索技能（`~/.config/opencode/cclover/skills/`）
+- 支持嵌套技能分类
+- 拦截 `skill` 工具调用并重定向到隐藏的 cclover 技能
+
+### Agent 类型
+
+Agent 在 `agents/` 目录中定义。每个 Agent 包含：
+- 定义其角色和行为的提示词文件
+- 配置的权限（edit、bash、read、webfetch、websearch）
+- 可选设置（temperature、color）
+
+可用的 Agent 类型因项目配置而异。常见的 Agent 包括代码助手、研究专家和执行助手。
 
 ## 开发规则
 

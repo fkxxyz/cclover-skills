@@ -23,6 +23,12 @@ cclover-skills/
 │   ├── helper-skill/
 │   │   └── SKILL.md
 │   └── ...
+├── agents/              # Agent definitions (prompt files)
+├── .opencode/           # OpenCode plugin system
+│   └── plugin/          # OpenCode plugins
+│       ├── cclover-agent.ts   # Sub-agent delegation tools
+│       ├── cclover-agents.ts  # Agent definitions & configuration
+│       └── cclover-skills.ts  # Dynamic skill loading tool
 ├── AGENTS.md           # This file
 └── README.md           # Project description
 ```
@@ -30,6 +36,8 @@ cclover-skills/
 **Directory Structure**:
 - **main-skills/**: User-facing skills installed to AI assistant systems
 - **skills/**: Internal skills used by main-skills for nested loading (not directly exposed to users)
+- **agents/**: Agent definition files (prompts)
+- **.opencode/**: OpenCode plugin system extending agent capabilities
 
 ## Nested Skill System
 
@@ -39,6 +47,39 @@ This project uses a nested skill system where main-skills can load and compose f
 - Skills in `main-skills/` can use the `skill` tool (provided by MCP service) to load skills from `skills/` directory
 - This enables modular skill design without exposing internal implementation details to end users
 - The `cclover-skill` tool accepts a skill name and loads the corresponding SKILL.md from `skills/{skill-name}/SKILL.md`
+
+## OpenCode Plugin System
+
+This project includes an OpenCode plugin system that extends agent capabilities.
+
+### Plugins Overview
+
+**cclover-agent.ts** — Sub-agent Delegation Tools
+- Provides tools for creating and managing delegated agent sessions
+- `cclover_agent`: Create new session and delegate task to specified agent type
+- `cclover_agent_result`: Check progress or retrieve results from delegated sessions
+- `cclover_agent_stop`: Stop a running delegated session
+
+**cclover-agents.ts** — Agent Definitions & Configuration
+- Registers custom agent definitions with OpenCode
+- Loads agent prompts from `agents/` directory
+- Configures agent-specific settings (temperature, permissions, color)
+- Sets default agent for the project
+
+**cclover-skills.ts** — Dynamic Skill Loading
+- Provides `cclover_skill` tool for loading skills not in system prompt
+- Searches skills from OpenCode config directory (`~/.config/opencode/cclover/skills/`)
+- Supports nested skill categories
+- Intercepts `skill` tool calls to redirect to hidden cclover skills
+
+### Agent Types
+
+Agents are defined in `agents/` directory. Each agent has:
+- A prompt file defining its role and behavior
+- Configured permissions (edit, bash, read, webfetch, websearch)
+- Optional settings (temperature, color)
+
+Available agent types vary by project configuration. Common agents include coding assistants, research specialists, and task executors.
 
 ## Development Rules
 
