@@ -34,10 +34,11 @@ function extractTextContent(parts: Array<{ type: string; [key: string]: any }>) 
 }
 
 function getLastAssistantMessage(messages: MessageLike[]) {
-  return messages
+  const assistantMessages = messages
     .filter((message) => message.info?.role === "assistant")
-    .sort((a, b) => (a.info?.time?.created ?? 0) - (b.info?.time?.created ?? 0))
-    .at(-1);
+    .sort((a, b) => (a.info?.time?.created ?? 0) - (b.info?.time?.created ?? 0));
+
+  return assistantMessages[assistantMessages.length - 1];
 }
 
 function getLastAssistantMessageWithText(messages: MessageLike[]) {
@@ -148,10 +149,11 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
 
             // 2. Find or use current project
             const projects = await ctx.client.project.list();
+            const projectList = (projects.data ?? []) as Array<{ id: string; worktree?: string }>;
             let projectID: string | undefined;
 
             // Try to find matching project by worktree path
-            for (const project of projects.data) {
+            for (const project of projectList) {
               if (project.worktree === projectPath) {
                 projectID = project.id;
                 break;
@@ -161,7 +163,7 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
             // If no matching project found, use current project
             if (!projectID) {
               const currentProject = await ctx.client.project.current();
-              projectID = currentProject.data.id;
+              projectID = (currentProject.data as { id: string } | undefined)?.id;
             }
 
             // 3. Create new session
@@ -169,10 +171,13 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
               body: {
                 projectID,
                 title: `Task: ${args.prompt.slice(0, 50)}${args.prompt.length > 50 ? '...' : ''}`,
-              },
+              } as any,
             });
 
-            const sessionID = session.data.id;
+            const sessionID = (session.data as { id: string } | undefined)?.id;
+            if (!sessionID) {
+              throw new Error("Session creation returned no session ID");
+            }
 
             // 4. Prepare message parts
             const parts: Array<{ type: string; [key: string]: any }> = [];
@@ -218,7 +223,7 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
                 body: {
                   agent: args.agent,
                   parts,
-                },
+                } as any,
               });
 
               return JSON.stringify({
@@ -231,14 +236,11 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
                 body: {
                   agent: args.agent,
                   parts,
-                },
+                } as any,
               });
 
-              // Extract text content from response
-              const assistantMessage = response.data.info;
-              const responseParts = response.data.parts;
+              const responseParts = ((response.data as { parts?: Array<{ type: string; [key: string]: any }> } | undefined)?.parts ?? []);
 
-              // Collect all text parts
               const textContent = responseParts
                 .filter((part: any) => part.type === "text")
                 .map((part: any) => part.text)
@@ -250,7 +252,6 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
               });
             }
           } catch (error) {
-            // Error handling
             const errorMessage = error instanceof Error ? error.message : String(error);
             return JSON.stringify({
               error: `Failed to create session or send prompt: ${errorMessage}`,
@@ -275,6 +276,32 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
             }
 
             await sleep(POLL_INTERVAL_MS);
+          }
+        },
+      }),
+      cclover_agent_stop: tool({
+        description: "Use when you need to stop a delegated sub-agent session that is still running or should not continue. This is for halting an existing session, not for checking results.",
+        args: {
+          session_id: tool.schema.string().describe("Delegated agent session ID to stop"),
+        },
+        async execute(args) {
+          try {
+            await ctx.client.session.abort({
+              path: { id: args.session_id },
+            });
+
+            return JSON.stringify({
+              session_id: args.session_id,
+              status: "stopped",
+              error: null,
+            });
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            return JSON.stringify({
+              session_id: args.session_id,
+              status: "error",
+              error: errorMessage,
+            });
           }
         },
       }),
