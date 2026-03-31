@@ -139,58 +139,54 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
           prompt: tool.schema.string().describe("Task description to send to the new session"),
           agent: tool.schema.string().describe("Agent type (e.g., 'build', 'explore', 'librarian', 'oracle')"),
           run_in_background: tool.schema.boolean().describe("Execution mode: true for async, false for sync"),
+          session_id: tool.schema.string().optional().describe("Existing delegated session ID to continue instead of creating a new session"),
           project_path: tool.schema.string().optional().describe("Project path for the new session (defaults to caller's project path)"),
           reference_docs: tool.schema.array(tool.schema.string()).optional().describe("Array of file paths to attach as reference documents"),
         },
         async execute(args, context) {
+          let sessionID = args.session_id;
+
           try {
-            // 1. Determine project path
             const projectPath = args.project_path || context.directory;
 
-            // 2. Find or use current project
-            const projects = await ctx.client.project.list();
-            const projectList = (projects.data ?? []) as Array<{ id: string; worktree?: string }>;
-            let projectID: string | undefined;
+            if (!sessionID) {
+              const projects = await ctx.client.project.list();
+              const projectList = (projects.data ?? []) as Array<{ id: string; worktree?: string }>;
+              let projectID: string | undefined;
 
-            // Try to find matching project by worktree path
-            for (const project of projectList) {
-              if (project.worktree === projectPath) {
-                projectID = project.id;
-                break;
+              for (const project of projectList) {
+                if (project.worktree === projectPath) {
+                  projectID = project.id;
+                  break;
+                }
+              }
+
+              if (!projectID) {
+                const currentProject = await ctx.client.project.current();
+                projectID = (currentProject.data as { id: string } | undefined)?.id;
+              }
+
+              const session = await ctx.client.session.create({
+                body: {
+                  projectID,
+                  title: `Task: ${args.prompt.slice(0, 50)}${args.prompt.length > 50 ? '...' : ''}`,
+                } as any,
+              });
+
+              sessionID = (session.data as { id: string } | undefined)?.id;
+              if (!sessionID) {
+                throw new Error("Session creation returned no session ID");
               }
             }
 
-            // If no matching project found, use current project
-            if (!projectID) {
-              const currentProject = await ctx.client.project.current();
-              projectID = (currentProject.data as { id: string } | undefined)?.id;
-            }
-
-            // 3. Create new session
-            const session = await ctx.client.session.create({
-              body: {
-                projectID,
-                title: `Task: ${args.prompt.slice(0, 50)}${args.prompt.length > 50 ? '...' : ''}`,
-              } as any,
-            });
-
-            const sessionID = (session.data as { id: string } | undefined)?.id;
-            if (!sessionID) {
-              throw new Error("Session creation returned no session ID");
-            }
-
-            // 4. Prepare message parts
             const parts: Array<{ type: string; [key: string]: any }> = [];
 
-            // Add reference documents as FileParts
             if (args.reference_docs && args.reference_docs.length > 0) {
               for (const docPath of args.reference_docs) {
-                // Resolve relative paths based on projectPath
                 const absolutePath = isAbsolute(docPath)
                   ? docPath
                   : resolve(projectPath, docPath);
 
-                // Check if file exists
                 if (!existsSync(absolutePath)) {
                   return JSON.stringify({
                     error: `Reference document not found: ${docPath}`,
@@ -198,7 +194,6 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
                   });
                 }
 
-                // Convert to file:// URL
                 const fileUrl = pathToFileURL(absolutePath).href;
 
                 parts.push({
@@ -209,15 +204,12 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
               }
             }
 
-            // Add prompt as TextPart (must be last)
             parts.push({
               type: "text",
               text: args.prompt,
             });
 
-            // 5. Send prompt to session
             if (args.run_in_background) {
-              // Async mode: send prompt and return immediately
               ctx.client.session.prompt({
                 path: { id: sessionID },
                 body: {
@@ -230,7 +222,6 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
                 session_id: sessionID,
               });
             } else {
-              // Sync mode: wait for response
               const response = await ctx.client.session.prompt({
                 path: { id: sessionID },
                 body: {
@@ -254,6 +245,7 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
           } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             return JSON.stringify({
+              session_id: sessionID,
               error: `Failed to create session or send prompt: ${errorMessage}`,
             });
           }
