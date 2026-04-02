@@ -24,7 +24,86 @@ Every meaningful topic—whether a technology, open-source project, war, institu
 
 ### CRITICAL Rules
 
-**1. Research Framework - The Three-Layer Structure**
+**1. 🚨 CRITICAL: Transparent Research Process - OUTPUT ANALYSIS AFTER EVERY SEARCH**
+
+**THIS IS THE MOST IMPORTANT RULE. FAILURE TO FOLLOW THIS IS A CRITICAL ERROR.**
+
+You MUST output analysis after EVERY search round. No exceptions.
+
+After EVERY search round (whether single or parallel searches), IMMEDIATELY output:
+
+---
+**🔍 Search Round N Analysis**
+
+**What we found:**
+- [Key findings from this round, including combined results of any parallel searches]
+
+**What's still missing:**
+- [Gaps in understanding, unresolved uncertainties]
+
+**Next direction:**
+- [What to search next and why]
+---
+
+**REPEAT: This analysis is MANDATORY and MUST be visible to the user after EVERY search round.**
+
+**DO NOT proceed to the next search without outputting this analysis first.**
+
+**Example of Correct Behavior:**
+
+User: "研究 Rust 编程语言的起源和演化"
+
+Agent: 
+"我将研究 Rust 编程语言的历史演化。首先获取当前系统时间，然后开始搜索。"
+
+[执行搜索...]
+
+---
+**🔍 Search Round 1 Analysis**
+
+**What we found:**
+- Rust 是 Mozilla 在 2010 年首次公开的系统编程语言
+- 当前版本 1.75，广泛用于系统编程、WebAssembly 等领域
+- 核心特性：内存安全、零成本抽象、并发安全
+
+**What's still missing:**
+- 为什么 Mozilla 要创建 Rust？当时有什么痛点？
+- Rust 之前的系统编程语言有什么问题？
+- Rust 的设计理念从何而来？
+
+**Next direction:**
+- 搜索 "Rust history", "why Rust was created", "Rust motivation"
+- 查找 Rust 创始人 Graydon Hoare 的早期博客文章
+---
+
+[继续下一轮搜索...]
+
+---
+**🔍 Search Round 2 Analysis**
+
+**What we found:**
+- Graydon Hoare 在 2006 年开始个人项目，2009 年 Mozilla 赞助
+- 创建动机：C/C++ 的内存安全问题导致大量安全漏洞
+- Firefox 浏览器 70% 的严重 bug 来自内存错误
+
+**What's still missing:**
+- 2006-2009 年间 Rust 的早期设计是什么样的？
+- 为什么 Mozilla 决定赞助这个项目？
+- Rust 与同期的 Go、Swift 等语言有什么不同？
+
+**Next direction:**
+- 搜索 Graydon Hoare 的早期博客和演讲
+- 查找 Rust 的 GitHub 早期 commit 历史
+- 搜索 "Rust vs Go", "Rust vs C++" 的历史对比
+---
+
+[继续搜索直到 5 轮无新信息...]
+
+[最后输出完整报告]
+
+---
+
+**2. Research Framework - The Three-Layer Structure**
 
 For any non-trivial topic, your research MUST cover three layers:
 
@@ -45,7 +124,7 @@ For any non-trivial topic, your research MUST cover three layers:
 
 **CRITICAL**: Do NOT reduce research to only Layer 3. The agent MUST explain both **how it came to exist** and **how it came to be this way**.
 
-**2. Source Verification - Trace to the Origin**
+**3. Source Verification - Trace to the Origin**
 
 Always prioritize first-hand information sources:
 
@@ -59,11 +138,11 @@ Always prioritize first-hand information sources:
 - Then seek neutral sources and cross-verify from multiple independent sources
 - For war/conflict news: Multiple contradictory sources are expected (information warfare), include all perspectives
 
-**3. Check System Time for Time-Sensitive Topics**
+**4. Check System Time for Time-Sensitive Topics**
 
 For any request involving "latest", "current", "today", "now", breaking news, live situations, wars/conflicts, market conditions, or other time-sensitive topics, first obtain the current system date/time via shell (for example: `date -Iseconds`) and use it as the baseline when researching and answering.
 
-**4. Dynamic Search Strategy - Follow the Clues**
+**5. Dynamic Search Strategy - Follow the Clues**
 
 Search process:
 1. Start with direct search for the topic
@@ -82,7 +161,7 @@ Search process:
 - Key turning points and major milestones
 - Evolution of related technologies/ideas/institutions
 
-**5. Multi-Tool Research Approach**
+**6. Multi-Tool Research Approach**
 
 Use appropriate tools for different research needs.
 In any given round, you MAY combine tools in parallel when it helps investigate the same uncertainty from multiple sources/angles or advance multiple uncertainties at once:
@@ -109,23 +188,9 @@ In any given round, you MAY combine tools in parallel when it helps investigate 
   - Find real-world usage examples
 
 - **bash**: For open-source projects
-  - Clone repositories to `/run/media/fkxxyz/wsl/home/fkxxyz/src/<project-name>`
+  - Clone repositories to `/run/media/fkxxyz/wsl/home/fkxxyz/pro/fkxxyz/cclover-skills/src/<project-name>`
   - Explore code structure
   - Run experiments and tests
-
-**6. Information Analysis After Each Search**
-
-After EVERY search round, output your analysis.
-If the round included parallel searches, synthesize them into one unified round analysis rather than treating them as unrelated fragments:
-
-```
-**Search Round N Analysis:**
-- **What we found**: [Key findings from this round, including the combined results of any parallel searches]
-- **What's still missing**: [Gaps in understanding, including unresolved uncertainties]
-- **Next direction**: [What to search next and why]
-```
-
-This analysis is MANDATORY and visible to the user.
 
 **7. Handling Contradictory Information**
 
@@ -214,6 +279,8 @@ Start with understanding what it is today:
 
 **Goal**: Establish baseline understanding of current form.
 
+**🔴 CRITICAL: After completing this phase, IMMEDIATELY output your Search Round 1 Analysis before proceeding to Phase 3.**
+
 ### Phase 3: Historical Deep Dive - Trace Origins
 
 **CRITICAL**: Do not stop at current form. Now search for:
@@ -241,6 +308,8 @@ Start with understanding what it is today:
 - What ecosystem changes made it viable?
 - Search: "[project] motivation", "[project] history", "before [project]", "[project] alternatives"
 
+**🔴 CRITICAL: After each search in this phase, IMMEDIATELY output your analysis before the next search.**
+
 ### Phase 4: Evolutionary Path - Map Development
 
 Search for:
@@ -255,16 +324,22 @@ Use:
 - Historical news articles
 - Community discussions (Reddit, HackerNews, Twitter via Nitter)
 
+**🔴 CRITICAL: After each search in this phase, IMMEDIATELY output your analysis before the next search.**
+
 ### Phase 5: Iterative Deep Dive
 
 ```
 WHILE (new_leads_exist OR consecutive_empty_searches < 5):
-    - Analyze current findings
-    - Output analysis (what found, what missing, next direction)
-    - Search based on new leads
-    - If new info found: reset counter
-    - If no new info: increment counter
+    1. Search based on current leads
+    2. 🚨 IMMEDIATELY output analysis (MANDATORY, DO NOT SKIP)
+       - What we found
+       - What's still missing
+       - Next direction
+    3. If new info found: reset counter
+    4. If no new info: increment counter
 ```
+
+**🔴 CRITICAL: Step 2 is MANDATORY. Do NOT proceed to next search without outputting analysis.**
 
 **Key**: Actively pursue historical leads, not just current information.
 
@@ -382,7 +457,7 @@ Research structure:
 1. Search for official repository (GitHub, GitLab, etc.)
 2. Use webfetch to read README, documentation, CHANGELOG
 3. Use context7 if it's a programming library/framework
-4. Clone repository: `git clone <url> /run/media/fkxxyz/wsl/home/fkxxyz/src/<project-name>`
+4. Clone repository: `git clone <url> /run/media/fkxxyz/wsl/home/fkxxyz/pro/fkxxyz/cclover-skills/src/<project-name>`
 5. Search for: "[project] history", "[project] motivation", "before [project]", "[project] alternatives"
 6. Use Nitter to find author's tweets about creation
 7. Search HackerNews, Reddit for community discussions
