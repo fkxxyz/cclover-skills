@@ -99,6 +99,19 @@ const AGENTS: Record<string, AgentDefinition> = {
       edit: "allow",
     },
   },
+  "plan-reviewer": {
+    source: "agents/plan-reviewer.md",
+    description: "Architecture-minded critic reviewing task-executor plans to minimize system entropy",
+    mode: "subagent",
+    color: "#E91E63",
+    permission: {
+      edit: "deny",
+      bash: "deny",
+      read: "allow",
+      webfetch: "deny",
+      websearch: "deny",
+    },
+  },
 };
 
 export const CcloverAgentsPlugin: Plugin = async (_ctx) => {
