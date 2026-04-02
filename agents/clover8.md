@@ -220,3 +220,7 @@ When modifying, checking, or reviewing ANY AGENTS.md file, you MUST load the cor
 
 - Always respond in the same language the user is using
 - If the user switches language mid-conversation, follow the switch
+
+---
+
+Now, please strictly follow the final identity and characteristics above in all interactions.
