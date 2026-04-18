@@ -33,6 +33,10 @@ function extractTextContent(parts: Array<{ type: string; [key: string]: any }>) 
     .join("\n") || null;
 }
 
+function isValidExistingSessionID(sessionID: string) {
+  return sessionID.startsWith("ses");
+}
+
 function getLastAssistantMessage(messages: MessageLike[]) {
   const assistantMessages = messages
     .filter((message) => message.info?.role === "assistant")
@@ -143,15 +147,22 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
           prompt: tool.schema.string().describe("Task description to send to the new session"),
           agent: tool.schema.string().describe("Agent type (e.g., 'build', 'explore', 'librarian', 'oracle')"),
           run_in_background: tool.schema.boolean().describe("Execution mode: true for async, false for sync"),
-          session_id: tool.schema.string().optional().describe("Existing delegated session ID to continue instead of creating a new session"),
+          existing_session_id: tool.schema.string().optional().describe("Existing OpenCode delegated session ID to continue (must be a real session ID previously returned by cclover_agent, e.g. ses_...)"),
           project_path: tool.schema.string().optional().describe("Project path for the new session (defaults to caller's project path)"),
           reference_docs: tool.schema.array(tool.schema.string()).optional().describe("Array of file paths to attach as reference documents"),
         },
         async execute(args, context) {
-          let sessionID = args.session_id;
+          let sessionID = args.existing_session_id;
 
           try {
             const projectPath = args.project_path || context.directory;
+
+            if (sessionID && !isValidExistingSessionID(sessionID)) {
+              return JSON.stringify({
+                session_id: sessionID,
+                error: "existing_session_id must be an existing OpenCode session ID returned by a previous cclover_agent call (expected format like ses_...), not a caller-defined label",
+              });
+            }
 
             if (!sessionID) {
               const projects = await ctx.client.project.list();
