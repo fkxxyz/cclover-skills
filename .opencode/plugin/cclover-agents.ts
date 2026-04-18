@@ -99,6 +99,19 @@ const AGENTS: Record<string, AgentDefinition> = {
       edit: "allow",
     },
   },
+  "search-report": {
+    source: "agents/search-report.md",
+    description: "Need-centered web search reporter using one-round parallel keyword searches and source-backed synthesis",
+    mode: "all",
+    color: "#00BCD4",
+    permission: {
+      edit: "deny",
+      bash: "deny",
+      read: "deny",
+      webfetch: "allow",
+      websearch: "allow",
+    },
+  },
   "plan-reviewer": {
     source: "agents/plan-reviewer.md",
     description: "Architecture-minded critic reviewing task-executor plans to minimize system entropy",
