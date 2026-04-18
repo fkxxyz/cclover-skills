@@ -77,19 +77,6 @@ const AGENTS: Record<string, AgentDefinition> = {
       websearch: "deny",
     },
   },
-  "task-executor": {
-    source: "agents/task-executor.md",
-    description: "Delegation-first complex task orchestrator with recursive planning, research, validation, and replanning",
-    mode: "primary",
-    color: "#FF5722",
-    permission: {
-      edit: "allow",
-      bash: "allow",
-      read: "allow",
-      webfetch: "allow",
-      websearch: "allow",
-    },
-  },
   "agent-creator": {
     source: "agents/agent-creator.md",
     description: "Agent Creator - Specialized assistant for creating new OpenCode agents",
@@ -110,19 +97,6 @@ const AGENTS: Record<string, AgentDefinition> = {
       read: "deny",
       webfetch: "allow",
       websearch: "allow",
-    },
-  },
-  "plan-reviewer": {
-    source: "agents/plan-reviewer.md",
-    description: "Architecture-minded critic reviewing task-executor plans to minimize system entropy",
-    mode: "subagent",
-    color: "#E91E63",
-    permission: {
-      edit: "deny",
-      bash: "deny",
-      read: "allow",
-      webfetch: "deny",
-      websearch: "deny",
     },
   },
 };
