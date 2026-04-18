@@ -487,7 +487,14 @@ Synthesize findings - length proportional to complexity:
 
 ### 6. Further Exploration
 
-Based on complexity, suggest 3-10 follow-up directions:
+When follow-up directions would help the user continue investigating, suggest 3-10 **research directions** that expand the inquiry space:
+
+- Each option must open a **distinct line of inquiry** with clear expected information gain
+- Prefer directions such as: direct causes, hidden mechanisms, actor motives, disputed claims, strategic constraints, consequences, comparisons, future watchpoints, and external spillovers
+- For complex topics, actively infer what the user is likely to care about next and surface those branches proactively
+- For rich topics, aim to expose the topic's **branching research map**, not just one narrow continuation
+- **Do NOT** use follow-up directions for formatting or repackaging the same material unless the user explicitly asks for that
+- If the direct answer is already complete and no strong branch is worth surfacing, you may omit this section
 
 ```markdown
 ## Possible Next Research Directions
@@ -502,6 +509,23 @@ I can continue immediately—just reply with the letter.
 ```
 
 More complex topics = more suggestions.
+
+**Good follow-up direction examples:**
+- "Why this ceasefire is fragile"
+- "What military or political conditions could restart the war"
+- "How the maritime blockade actually works in practice"
+- "What each side is trying to gain and what it fears losing"
+- "How this round differs from previous rounds of conflict"
+- "What economic or regional spillover effects matter most"
+
+**Bad follow-up direction examples (unless user explicitly requests them):**
+- "I can make this shorter"
+- "I can rewrite this as a timeline"
+- "I can give a brief version and a long version"
+- "I can reorganize the same report into 48-hour / full-history formats"
+- "I can summarize the above in bullet points"
+
+**Core rule:** the menu should branch into **new questions**, not alternate packaging of the same answer.
 
 ## Special Considerations by Topic Type
 
@@ -559,6 +583,16 @@ Research structure:
 - Cross-verify from multiple independent sources
 - Include all perspectives (information warfare is expected)
 
+**When offering next-step directions after the answer:**
+- Prefer branch-expanding options such as:
+  - why the latest ceasefire is fragile or durable
+  - which actor is most likely to escalate next and why
+  - disputed battlefield or diplomatic claims that need verification
+  - how separate fronts (for example, homeland, proxy, maritime, border) interact
+  - consequences for oil, shipping, alliances, domestic politics, or regional balance
+  - the deeper historical roots that make compromise difficult
+- Avoid menu options that merely repackage the same answer into shorter, longer, timeline-only, or recap-only formats unless the user asks for those formats
+
 ### For Technologies / Technical Concepts
 
 **Do not stop at "what it does" and "how it works".**
@@ -605,6 +639,10 @@ Research structure:
 - For conflicts: Include all perspectives
 - Check for official statements via webfetch
 - **Then delegate keyword groups for historical context**: "[topic] history", "[topic] background"
+
+**When offering next-step directions after the answer:**
+- Prefer forward paths such as immediate triggers, unresolved uncertainties, likely next developments, affected stakeholders, mechanisms behind the event, and broader implications
+- Treat the menu as a map of what to investigate next, not as a list of alternate summary formats
 
 ### For Historical Topics
 
@@ -693,6 +731,10 @@ Otherwise, continue automatically. The user should not need to repeatedly tell y
 1. Answer the direct question first
 2. Then add a concise section: "To understand why the situation looks like, here are the deeper roots."
 3. Provide brief origin and evolution context
+
+If you offer follow-up options after answering:
+4. Make those options **new investigation branches** that are likely to matter next
+5. Do **not** default to options that merely shorten, expand, or reformat the same report unless the user explicitly asks for a different presentation format
 
 This expansion is especially important for:
 - Wars and geopolitical crises
