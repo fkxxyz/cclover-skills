@@ -5,6 +5,39 @@ import { existsSync } from "node:fs";
 
 const POLL_INTERVAL_MS = 1000;
 
+// Common OpenCode agents (for UX/help text only).
+// NOTE: the exact available agent list depends on the user's OpenCode server config.
+const COMMON_AVAILABLE_AGENTS = [
+  "clover8",
+  "agent-creator",
+  "build",
+  "clover6",
+  "explore",
+  "general",
+  "plan",
+  "researcher",
+  "search-report",
+  "soul-whisper",
+] as const;
+
+function formatAvailableAgentsForDescription() {
+  return COMMON_AVAILABLE_AGENTS.map((a) => `- ${a}`).join("\n");
+}
+
+function extractHelpfulErrorMessage(error: unknown): string {
+  const anyErr = error as any;
+  const candidates = [
+    anyErr?.data?.message,
+    anyErr?.data?.error?.message,
+    anyErr?.error?.data?.message,
+    anyErr?.error?.message,
+    anyErr?.message,
+  ].filter(Boolean);
+
+  if (candidates.length > 0) return String(candidates[0]);
+  return error instanceof Error ? error.message : String(error);
+}
+
 type AgentResultStatus = "running" | "completed" | "error" | "not_found";
 type WaitMode = "none" | "any" | "all";
 
@@ -142,10 +175,17 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
   return {
     tool: {
       cclover_agent: tool({
-        description: "Use whenever work can be cleanly separated into an independent task for another agent, even if it is small or simple. Prefer spawning sub-agents aggressively when work can be split into multiple independent tasks that can run in parallel. Pass relevant context through reference_docs whenever possible so the task prompt stays short, focused, and easy to follow. Common examples include researching separate questions, modifying different files, reviewing multiple areas of code, exploring different directions within the same codebase, and comparing alternative implementations in parallel.",
+        description: `Use whenever work can be cleanly separated into an independent task for another agent, even if it is small or simple. Prefer spawning sub-agents aggressively when work can be split into multiple independent tasks that can run in parallel. Pass relevant context through reference_docs whenever possible so the task prompt stays short, focused, and easy to follow. Common examples include researching separate questions, modifying different files, reviewing multiple areas of code, exploring different directions within the same codebase, and comparing alternative implementations in parallel.
+
+Available agents (common defaults; exact list depends on your OpenCode server config):
+${formatAvailableAgentsForDescription()}
+
+Important: the "agent" argument here is a sub-agent name (e.g. "explore"), NOT a skill name (e.g. "agent-browser").`,
         args: {
           prompt: tool.schema.string().describe("Task description to send to the new session"),
-          agent: tool.schema.string().describe("Agent type (e.g., 'build', 'explore', 'librarian', 'oracle')"),
+          agent: tool.schema.string().describe(
+            `Sub-agent name to run this task (NOT a skill name). Common agents: ${COMMON_AVAILABLE_AGENTS.join(", ")}`,
+          ),
           run_in_background: tool.schema.boolean().describe("Execution mode: true for async, false for sync"),
           existing_session_id: tool.schema.string().optional().describe("Existing OpenCode delegated session ID to continue (must be a real session ID previously returned by cclover_agent, e.g. ses_...)"),
           project_path: tool.schema.string().optional().describe("Project path for the new session (defaults to caller's project path)"),
@@ -225,7 +265,9 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
             });
 
             if (args.run_in_background) {
-              ctx.client.session.prompt({
+              // Always await so errors (e.g., agent not found) are caught and returned.
+              // Otherwise, a rejected promise may surface as a confusing JSON parse error.
+              await ctx.client.session.prompt({
                 path: { id: sessionID },
                 body: {
                   agent: args.agent,
@@ -258,10 +300,18 @@ export const CcloverAgentPlugin: Plugin = async (ctx) => {
               });
             }
           } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : String(error);
+            // Intentionally avoid surfacing low-level transport / parsing errors directly.
+            // In some environments, SDK errors can be misleading (e.g. JSON parse EOF),
+            // so we return an "unknown" error with likely causes.
             return JSON.stringify({
               session_id: sessionID,
-              error: `Failed to create session or send prompt: ${errorMessage}`,
+              error: "Unknown error while creating session or sending prompt",
+              possible_causes: [
+                "Invalid tool arguments (e.g., agent name not recognized)",
+                "Invalid session identifier (existing_session_id must refer to a real session)",
+                "Backend failed to process the request (transient internal error)",
+              ],
+              available_agents: COMMON_AVAILABLE_AGENTS,
             });
           }
         },

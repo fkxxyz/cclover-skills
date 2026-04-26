@@ -127,6 +127,11 @@ async function testPlugin() {
       assert.equal(promptCalls, 2);
       console.log("✓ Omitting existing_session_id creates a new session");
 
+      // Basic check: description should help users pick correct agent names
+      assert.match(tool.description, /Available agents/i);
+      assert.match(tool.description, /NOT a skill name/i);
+      console.log("✓ Tool description includes available agents hint");
+
       if (resultTool.args) {
         console.log("✓ Result tool has args defined");
         console.log("  - session_ids:", resultTool.args.session_ids ? "✓" : "✗");
