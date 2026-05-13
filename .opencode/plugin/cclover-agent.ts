@@ -267,7 +267,9 @@ Important: the "agent" argument here is a sub-agent name (e.g. "explore"), NOT a
             if (args.run_in_background) {
               // Always await so errors (e.g., agent not found) are caught and returned.
               // Otherwise, a rejected promise may surface as a confusing JSON parse error.
-              await ctx.client.session.prompt({
+              // IMPORTANT: use promptAsync so we don't block until the agent finishes.
+              // promptAsync returns once the prompt is accepted/scheduled.
+              await ctx.client.session.promptAsync({
                 path: { id: sessionID },
                 body: {
                   agent: args.agent,

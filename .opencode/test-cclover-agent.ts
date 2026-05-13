@@ -15,6 +15,7 @@ async function testPlugin() {
   // Mock context
   let createCalls = 0;
   let promptCalls = 0;
+  let promptAsyncCalls = 0;
 
   const mockContext = {
     client: {
@@ -33,6 +34,14 @@ async function testPlugin() {
             data: {
               id: path.id,
               parts: [{ type: "text", text: "mock response" }],
+            },
+          };
+        },
+        promptAsync: async ({ path }: any) => {
+          promptAsyncCalls++;
+          return {
+            data: {
+              id: path.id,
             },
           };
         },
@@ -124,7 +133,10 @@ async function testPlugin() {
       const newSessionResult = JSON.parse(newSessionRaw);
       assert.equal(newSessionResult.session_id, "ses_created_123");
       assert.equal(createCalls, 1);
-      assert.equal(promptCalls, 2);
+      // background mode should use promptAsync (non-blocking)
+      assert.equal(promptAsyncCalls, 1);
+      // prompt should only be used by sync branch (and the earlier validExistingSession test)
+      assert.equal(promptCalls, 1);
       console.log("✓ Omitting existing_session_id creates a new session");
 
       // Basic check: description should help users pick correct agent names
